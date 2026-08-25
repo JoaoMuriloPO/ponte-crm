@@ -9,11 +9,15 @@ import {
   Menu,
   X,
   TrendingUp,
+  Cloud,
+  CloudOff,
+  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { getConfiguracoes } from "@/services/storage/localStorageService"
+import { useAuth } from "@/contexts/AuthContext"
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -26,6 +30,7 @@ const navItems = [
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation()
   const config = getConfiguracoes()
+  const { user, isAuthenticated, isSyncing, lastSync, syncToGist, loadFromGist } = useAuth()
 
   return (
     <div className="flex h-full flex-col">
@@ -38,7 +43,69 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <p className="text-xs text-muted-foreground mt-0.5">{config.nomeProprietario}</p>
         </div>
       </div>
+
+      {/* Auth & Sync status */}
+      {isAuthenticated && user && (
+        <>
+          <Separator />
+          <div className="px-6 py-3">
+            <div className="flex items-center gap-2">
+              <img
+                src={user.avatar_url}
+                alt={user.login}
+                className="h-6 w-6 rounded-full"
+              />
+              <span className="text-xs font-medium truncate">{user.name}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              {lastSync ? (
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Cloud className="h-3 w-3" />
+                  Sync: {new Date(lastSync).toLocaleTimeString("pt-BR")}
+                </span>
+              ) : (
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <CloudOff className="h-3 w-3" />
+                  Sem sync
+                </span>
+              )}
+            </div>
+            <div className="flex gap-1 mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs flex-1"
+                onClick={syncToGist}
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <RefreshCw className="h-3 w-3 animate-spin mr-1" />
+                ) : (
+                  <Cloud className="h-3 w-3 mr-1" />
+                )}
+                Salvar
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs flex-1"
+                onClick={loadFromGist}
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <RefreshCw className="h-3 w-3 animate-spin mr-1" />
+                ) : (
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                )}
+                Carregar
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
       <Separator />
+
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
           const isActive =
