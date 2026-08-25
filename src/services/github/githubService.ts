@@ -17,22 +17,32 @@ export interface GitHubUser {
   avatar_url: string
 }
 
-function getOctokit(token: string): Octokit {
-  return new Octokit({ auth: token })
+// === OAuth Flow ===
+
+export function getGitHubAuthUrl(): string {
+  const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
+  const redirectUri = `${window.location.origin}/auth/callback`
+  return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=gist`
 }
 
-export async function validateToken(token: string): Promise<GitHubUser | null> {
+export async function exchangeCodeForToken(code: string): Promise<{ access_token: string; user: GitHubUser } | null> {
   try {
-    const octokit = getOctokit(token)
-    const { data } = await octokit.users.getAuthenticated()
-    return {
-      login: data.login,
-      name: data.name || data.login,
-      avatar_url: data.avatar_url,
-    }
+    const res = await fetch("/api/auth/github", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    })
+    if (!res.ok) return null
+    return await res.json()
   } catch {
     return null
   }
+}
+
+// === Gist Operations ===
+
+function getOctokit(token: string): Octokit {
+  return new Octokit({ auth: token })
 }
 
 export async function findOrCreateGist(token: string): Promise<string> {

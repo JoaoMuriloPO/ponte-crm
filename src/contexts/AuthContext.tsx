@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import {
-  validateToken,
+  getGitHubAuthUrl,
+  exchangeCodeForToken,
   findOrCreateGist,
   loadGistData,
   saveGistData,
@@ -16,7 +17,8 @@ interface AuthContextType {
   isAuthenticated: boolean
   isSyncing: boolean
   lastSync: string | null
-  login: (token: string) => Promise<boolean>
+  loginWithGitHub: () => void
+  handleCallback: (code: string) => Promise<boolean>
   logout: () => void
   syncToGist: () => Promise<boolean>
   loadFromGist: () => Promise<boolean>
@@ -25,6 +27,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 const STORAGE_KEY_TOKEN = "crm_github_token"
+const STORAGE_KEY_USER = "crm_github_user"
 const STORAGE_KEY_GIST = "crm_gist_id"
 const STORAGE_KEY_SYNC = "crm_last_sync"
 
@@ -35,39 +38,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSyncing, setIsSyncing] = useState(false)
   const [lastSync, setLastSync] = useState<string | null>(null)
 
-  // Auto-login on mount
+  // Auto-login from localStorage on mount
   useEffect(() => {
     const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN)
+    const savedUser = localStorage.getItem(STORAGE_KEY_USER)
     const savedGist = localStorage.getItem(STORAGE_KEY_GIST)
     const savedSync = localStorage.getItem(STORAGE_KEY_SYNC)
 
     if (savedSync) setLastSync(savedSync)
 
-    if (savedToken) {
-      validateToken(savedToken).then((u) => {
-        if (u) {
-          setUser(u)
-          setToken(savedToken)
-          setGistId(savedGist)
-        } else {
-          // Token invalid, clear
-          localStorage.removeItem(STORAGE_KEY_TOKEN)
-          localStorage.removeItem(STORAGE_KEY_GIST)
-        }
-      })
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken)
+        setUser(JSON.parse(savedUser))
+        setGistId(savedGist)
+      } catch {
+        localStorage.removeItem(STORAGE_KEY_TOKEN)
+        localStorage.removeItem(STORAGE_KEY_USER)
+        localStorage.removeItem(STORAGE_KEY_GIST)
+      }
     }
   }, [])
 
-  const login = useCallback(async (newToken: string): Promise<boolean> => {
-    const u = await validateToken(newToken)
-    if (!u) return false
+  const loginWithGitHub = useCallback(() => {
+    const url = getGitHubAuthUrl()
+    window.location.href = url
+  }, [])
 
-    setUser(u)
-    setToken(newToken)
-    localStorage.setItem(STORAGE_KEY_TOKEN, newToken)
+  const handleCallback = useCallback(async (code: string): Promise<boolean> => {
+    const result = await exchangeCodeForToken(code)
+    if (!result) return false
+
+    setUser(result.user)
+    setToken(result.access_token)
+    localStorage.setItem(STORAGE_KEY_TOKEN, result.access_token)
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(result.user))
 
     // Find or create gist
-    const gId = await findOrCreateGist(newToken)
+    const gId = await findOrCreateGist(result.access_token)
     setGistId(gId)
     localStorage.setItem(STORAGE_KEY_GIST, gId)
 
@@ -79,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null)
     setGistId(null)
     localStorage.removeItem(STORAGE_KEY_TOKEN)
+    localStorage.removeItem(STORAGE_KEY_USER)
     localStorage.removeItem(STORAGE_KEY_GIST)
   }, [])
 
@@ -112,7 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await loadGistData(token, gistId)
       if (!data) return false
 
-      // Save to localStorage
       localStorage.setItem("crm_vendedores", JSON.stringify(data.vendedores))
       localStorage.setItem("crm_vendas", JSON.stringify(data.vendas))
       localStorage.setItem("crm_configuracoes", JSON.stringify(data.configuracoes))
@@ -135,7 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isSyncing,
         lastSync,
-        login,
+        loginWithGitHub,
+        handleCallback,
         logout,
         syncToGist,
         loadFromGist,

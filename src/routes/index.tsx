@@ -6,8 +6,13 @@ import VendedorDetalhe from "@/pages/VendedorDetalhe"
 import Vendas from "@/pages/Vendas"
 import Relatorios from "@/pages/Relatorios"
 import Configuracoes from "@/pages/Configuracoes"
+import AuthCallback from "@/pages/AuthCallback"
 
 export const router = createBrowserRouter([
+  {
+    path: "/auth/callback",
+    element: <AuthCallback />,
+  },
   {
     path: "/",
     element: <AppLayout />,
