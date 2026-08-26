@@ -15,6 +15,10 @@ function migrateVendedores(data: unknown[]): Vendedor[] {
       v.percentualProprietario = v.percentualInstrutor
       delete v.percentualInstrutor
     }
+    if ("ferramentasEnabled" in v && !("despachanteEnabled" in v)) {
+      v.despachanteEnabled = v.ferramentasEnabled
+      delete v.ferramentasEnabled
+    }
     return v as unknown as Vendedor
   })
 }
@@ -27,6 +31,10 @@ function migrateVendas(data: unknown[]): Venda[] {
       if ("instrutor" in dist && !("proprietario" in dist)) {
         dist.proprietario = dist.instrutor
         delete dist.instrutor
+      }
+      if ("ferramentas" in dist && !("despachante" in dist)) {
+        dist.despachante = dist.ferramentas
+        delete dist.ferramentas
       }
       v.distribuicao = dist
     }
@@ -87,7 +95,7 @@ export function getVendedores(): Vendedor[] {
     const raw = localStorage.getItem(KEYS.VENDEDORES)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (parsed.length > 0 && "percentualInstrutor" in (parsed[0] || {})) {
+      if (parsed.length > 0 && ("percentualInstrutor" in (parsed[0] || {}) || "ferramentasEnabled" in (parsed[0] || {}))) {
         writeToStorage(KEYS.VENDEDORES, data)
       }
     }
@@ -134,7 +142,7 @@ export function getVendas(): Venda[] {
       const parsed = JSON.parse(raw)
       if (parsed.length > 0) {
         const firstDist = (parsed[0] || {}).distribuicao
-        if (firstDist && "instrutor" in firstDist) {
+        if (firstDist && ("instrutor" in firstDist || "ferramentas" in firstDist)) {
           writeToStorage(KEYS.VENDAS, data)
         }
       }

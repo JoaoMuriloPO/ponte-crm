@@ -115,13 +115,13 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Ferramentas
+              Despachante
             </CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(totals.totalFerramentas)}
+              {formatCurrency(totals.totalDespachante)}
             </div>
             <p className="text-xs text-muted-foreground">
               {totals.quantidadePontes} pontes ativos

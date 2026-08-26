@@ -1,6 +1,6 @@
 import {
   EMPRESA_PERCENTUAL,
-  FERRAMENTAS_PERCENTUAL,
+  DESPACHANTE_PERCENTUAL,
   type Vendedor,
   type Distribuicao,
   type Venda,
@@ -13,7 +13,7 @@ import {
 export function getDistributionPercentages(vendedor: Vendedor): Distribuicao {
   return {
     empresa: EMPRESA_PERCENTUAL,
-    ferramentas: vendedor.ferramentasEnabled ? FERRAMENTAS_PERCENTUAL : 0,
+    despachante: vendedor.despachanteEnabled ? DESPACHANTE_PERCENTUAL : 0,
     vendedor: vendedor.percentualVendedor,
     proprietario: vendedor.percentualProprietario,
   }
@@ -21,19 +21,19 @@ export function getDistributionPercentages(vendedor: Vendedor): Distribuicao {
 
 export function validateDistribution(vendedor: Vendedor): boolean {
   const dist = getDistributionPercentages(vendedor)
-  const total = dist.empresa + dist.ferramentas + dist.vendedor + dist.proprietario
+  const total = dist.empresa + dist.despachante + dist.vendedor + dist.proprietario
   return total === 100
 }
 
 export function getDistributionTotal(vendedor: Vendedor): number {
   const dist = getDistributionPercentages(vendedor)
-  return dist.empresa + dist.ferramentas + dist.vendedor + dist.proprietario
+  return dist.empresa + dist.despachante + dist.vendedor + dist.proprietario
 }
 
 export function calculateSaleValues(valor: number, dist: Distribuicao): Omit<SaleCalculation, "venda"> {
   return {
     valorEmpresa: valor * dist.empresa / 100,
-    valorFerramentas: valor * dist.ferramentas / 100,
+    valorDespachante: valor * dist.despachante / 100,
     valorVendedor: valor * dist.vendedor / 100,
     valorProprietario: valor * dist.proprietario / 100,
   }
@@ -53,7 +53,7 @@ export function calculateDashboardTotals(
 ): DashboardTotals {
   let totalVendido = 0
   let totalEmpresa = 0
-  let totalFerramentas = 0
+  let totalDespachante = 0
   let totalPontes = 0
   let totalProprietario = 0
 
@@ -61,7 +61,7 @@ export function calculateDashboardTotals(
     const calc = calculateSale(venda)
     totalVendido += venda.valor
     totalEmpresa += calc.valorEmpresa
-    totalFerramentas += calc.valorFerramentas
+    totalDespachante += calc.valorDespachante
     totalPontes += calc.valorVendedor
     totalProprietario += calc.valorProprietario
   }
@@ -70,7 +70,7 @@ export function calculateDashboardTotals(
     totalVendido,
     quantidadeVendas: vendas.length,
     totalEmpresa,
-    totalFerramentas,
+    totalDespachante,
     totalPontes,
     totalProprietario,
     quantidadePontes: vendedores.length,
@@ -85,7 +85,7 @@ export function calculateSellerTotals(
   let totalVendedor = 0
   let totalProprietario = 0
   let totalEmpresa = 0
-  let totalFerramentas = 0
+  let totalDespachante = 0
 
   for (const venda of vendas) {
     const calc = calculateSale(venda)
@@ -93,7 +93,7 @@ export function calculateSellerTotals(
     totalVendedor += calc.valorVendedor
     totalProprietario += calc.valorProprietario
     totalEmpresa += calc.valorEmpresa
-    totalFerramentas += calc.valorFerramentas
+    totalDespachante += calc.valorDespachante
   }
 
   return {
@@ -103,7 +103,7 @@ export function calculateSellerTotals(
     totalVendedor,
     totalProprietario,
     totalEmpresa,
-    totalFerramentas,
+    totalDespachante,
   }
 }
 
@@ -127,14 +127,14 @@ export function calculateReport(
 
   let totalVendido = 0
   let totalEmpresa = 0
-  let totalFerramentas = 0
+  let totalDespachante = 0
   let totalPontes = 0
   let totalProprietario = 0
 
   for (const calc of saleCalculations) {
     totalVendido += calc.venda.valor
     totalEmpresa += calc.valorEmpresa
-    totalFerramentas += calc.valorFerramentas
+    totalDespachante += calc.valorDespachante
     totalPontes += calc.valorVendedor
     totalProprietario += calc.valorProprietario
   }
@@ -143,7 +143,7 @@ export function calculateReport(
     totalVendido,
     quantidadeVendas: filteredVendas.length,
     totalEmpresa,
-    totalFerramentas,
+    totalDespachante,
     totalPontes,
     totalProprietario,
     vendas: saleCalculations,

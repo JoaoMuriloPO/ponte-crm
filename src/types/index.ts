@@ -1,18 +1,18 @@
 export const EMPRESA_PERCENTUAL = 60
-export const FERRAMENTAS_PERCENTUAL = 10
+export const DESPACHANTE_PERCENTUAL = 10
 
 export interface Vendedor {
   id: string
   nome: string
   createdAt: string
-  ferramentasEnabled: boolean
+  despachanteEnabled: boolean
   percentualVendedor: number
   percentualProprietario: number
 }
 
 export interface Distribuicao {
   empresa: number
-  ferramentas: number
+  despachante: number
   vendedor: number
   proprietario: number
 }
@@ -29,7 +29,7 @@ export interface Venda {
 export interface SaleCalculation {
   venda: Venda
   valorEmpresa: number
-  valorFerramentas: number
+  valorDespachante: number
   valorVendedor: number
   valorProprietario: number
 }
@@ -38,7 +38,7 @@ export interface DashboardTotals {
   totalVendido: number
   quantidadeVendas: number
   totalEmpresa: number
-  totalFerramentas: number
+  totalDespachante: number
   totalPontes: number
   totalProprietario: number
   quantidadePontes: number
@@ -51,14 +51,14 @@ export interface SellerTotals {
   totalVendedor: number
   totalProprietario: number
   totalEmpresa: number
-  totalFerramentas: number
+  totalDespachante: number
 }
 
 export interface ReportTotals {
   totalVendido: number
   quantidadeVendas: number
   totalEmpresa: number
-  totalFerramentas: number
+  totalDespachante: number
   totalPontes: number
   totalProprietario: number
   vendas: SaleCalculation[]

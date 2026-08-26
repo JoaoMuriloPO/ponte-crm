@@ -28,7 +28,7 @@ import { validateDistribution } from "@/utils/calculations"
 import { formatCurrency } from "@/utils/format"
 import { calculateSellerTotals } from "@/utils/calculations"
 import type { Vendedor } from "@/types"
-import { EMPRESA_PERCENTUAL, FERRAMENTAS_PERCENTUAL } from "@/types"
+import { EMPRESA_PERCENTUAL, DESPACHANTE_PERCENTUAL } from "@/types"
 
 export default function Vendedores() {
   const { vendedores, add, update, remove } = useVendedores()
@@ -40,14 +40,14 @@ export default function Vendedores() {
 
   // Form state
   const [nome, setNome] = useState("")
-  const [ferramentasEnabled, setFerramentasEnabled] = useState(true)
+  const [despachanteEnabled, setDespachanteEnabled] = useState(true)
   const [percentualVendedor, setPercentualVendedor] = useState(20)
   const [percentualProprietario, setPercentualProprietario] = useState(10)
 
   function openNewDialog() {
     setEditingId(null)
     setNome("")
-    setFerramentasEnabled(true)
+    setDespachanteEnabled(true)
     setPercentualVendedor(20)
     setPercentualProprietario(10)
     setDialogOpen(true)
@@ -56,7 +56,7 @@ export default function Vendedores() {
   function openEditDialog(vendedor: Vendedor) {
     setEditingId(vendedor.id)
     setNome(vendedor.nome)
-    setFerramentasEnabled(vendedor.ferramentasEnabled)
+    setDespachanteEnabled(vendedor.despachanteEnabled)
     setPercentualVendedor(vendedor.percentualVendedor)
     setPercentualProprietario(vendedor.percentualProprietario)
     setDialogOpen(true)
@@ -66,7 +66,7 @@ export default function Vendedores() {
     if (!nome.trim()) return
 
     const config = {
-      ferramentasEnabled,
+      despachanteEnabled,
       percentualVendedor,
       percentualProprietario,
     }
@@ -79,7 +79,7 @@ export default function Vendedores() {
         update({
           ...existing,
           nome: nome.trim(),
-          ferramentasEnabled,
+          despachanteEnabled,
           percentualVendedor,
           percentualProprietario,
         })
@@ -89,7 +89,7 @@ export default function Vendedores() {
         id: crypto.randomUUID(),
         nome: nome.trim(),
         createdAt: new Date().toISOString(),
-        ferramentasEnabled,
+        despachanteEnabled,
         percentualVendedor,
         percentualProprietario,
       })
@@ -105,7 +105,7 @@ export default function Vendedores() {
 
   const totalDist =
     EMPRESA_PERCENTUAL +
-    (ferramentasEnabled ? FERRAMENTAS_PERCENTUAL : 0) +
+    (despachanteEnabled ? DESPACHANTE_PERCENTUAL : 0) +
     percentualVendedor +
     percentualProprietario
 
@@ -136,7 +136,7 @@ export default function Vendedores() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Ponte</TableHead>
-                    <TableHead className="text-center">Ferramentas</TableHead>
+                    <TableHead className="text-center">Despachante</TableHead>
                     <TableHead className="text-right hidden sm:table-cell">
                       % Ponte
                     </TableHead>
@@ -171,8 +171,8 @@ export default function Vendedores() {
                           {v.nome} - Ponte
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant={v.ferramentasEnabled ? "default" : "secondary"}>
-                            {v.ferramentasEnabled ? "Sim" : "Não"}
+                          <Badge variant={v.despachanteEnabled ? "default" : "secondary"}>
+                            {v.despachanteEnabled ? "Sim" : "Não"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right hidden sm:table-cell">
@@ -249,16 +249,16 @@ export default function Vendedores() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Utiliza ferramentas</Label>
+                <Label>Utiliza despachante</Label>
                 <p className="text-xs text-muted-foreground">
-                  {ferramentasEnabled
-                    ? "Ferramentas: 10% da distribuição"
-                    : "Sem ferramentas na distribuição"}
+                  {despachanteEnabled
+                    ? "Despachante: 10% da distribuição"
+                    : "Sem despachante na distribuição"}
                 </p>
               </div>
               <Switch
-                checked={ferramentasEnabled}
-                onCheckedChange={setFerramentasEnabled}
+                checked={despachanteEnabled}
+                onCheckedChange={setDespachanteEnabled}
               />
             </div>
 
@@ -300,10 +300,10 @@ export default function Vendedores() {
                 <span>Empresa</span>
                 <span className="font-medium">{EMPRESA_PERCENTUAL}%</span>
               </div>
-              {ferramentasEnabled && (
+              {despachanteEnabled && (
                 <div className="flex justify-between text-sm">
-                  <span>Ferramentas</span>
-                  <span className="font-medium">{FERRAMENTAS_PERCENTUAL}%</span>
+                  <span>Despachante</span>
+                  <span className="font-medium">{DESPACHANTE_PERCENTUAL}%</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">

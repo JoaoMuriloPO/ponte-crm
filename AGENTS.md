@@ -1,7 +1,7 @@
 # AGENTS.md — Ponte CRM
 
 ## Visão Geral
-CRM financeiro para controle de vendas de "pontes" (vendedores). Mostra distribuição de receita entre Empresa (60%), Ferramentas (10%), Ponte e Proprietário. **Este projeto deve reutilizar padrões do kpsi-app.**
+CRM financeiro para controle de vendas de "pontes" (vendedores). Mostra distribuição de receita entre Empresa (60%), Despachante (10%), Ponte e Proprietário. **Este projeto deve reutilizar padrões do kpsi-app.**
 
 ## Repo
 - **URL:** https://github.com/JoaoMuriloPO/ponte-crm.git
@@ -39,7 +39,7 @@ CRM financeiro para controle de vendas de "pontes" (vendedores). Mostra distribu
 ```ts
 interface Vendedor {
   id: string; nome: string; createdAt: string;
-  ferramentasEnabled: boolean;
+  despachanteEnabled: boolean;
   percentualVendedor: number;
   percentualProprietario: number;
 }
@@ -47,7 +47,7 @@ interface Vendedor {
 interface Venda {
   id: string; vendedorId: string; valor: number;
   data: string; descricao?: string;
-  distribuicao: { empresa: number; ferramentas: number; vendedor: number; proprietario: number };
+  distribuicao: { empresa: number; despachante: number; vendedor: number; proprietario: number };
 }
 
 interface Configuracoes { nomeProprietario: string }
@@ -55,7 +55,7 @@ interface Configuracoes { nomeProprietario: string }
 
 ### Constantes
 - `EMPRESA_PERCENTUAL = 60`
-- `FERRAMENTAS_PERCENTUAL = 10`
+- `DESPACHANTE_PERCENTUAL = 10`
 
 ## Arquivos Principais
 | Arquivo | Função |

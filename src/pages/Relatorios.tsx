@@ -76,7 +76,7 @@ export default function Relatorios() {
   const chartData = useMemo(() => {
     const data = [
       { name: "Empresa", value: report.totalEmpresa },
-      { name: "Ferramentas", value: report.totalFerramentas },
+      { name: "Despachante", value: report.totalDespachante },
       { name: "Pontes", value: report.totalPontes },
       { name: config.nomeProprietario, value: report.totalProprietario },
     ].filter((d) => d.value > 0)
@@ -227,16 +227,16 @@ export default function Relatorios() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Ferramentas
+                  Despachante
                 </CardTitle>
                 <Wrench className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(report.totalFerramentas)}
+                  {formatCurrency(report.totalDespachante)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Custos com ferramentas
+                  Custos com despachante
                 </p>
               </CardContent>
             </Card>
@@ -336,10 +336,10 @@ export default function Relatorios() {
                   <div className="rounded-lg border p-4">
                     <div className="flex items-center gap-2 text-muted-foreground mb-2">
                       <Wrench className="h-4 w-4" />
-                      <span className="text-sm font-medium">Ferramentas</span>
+                      <span className="text-sm font-medium">Despachante</span>
                     </div>
                     <p className="text-2xl font-bold">
-                      {formatCurrency(report.totalFerramentas)}
+                      {formatCurrency(report.totalDespachante)}
                     </p>
                   </div>
                   <div className="rounded-lg border p-4">
@@ -378,7 +378,7 @@ export default function Relatorios() {
                             Empresa
                           </TableHead>
                           <TableHead className="text-right hidden sm:table-cell">
-                            Ferramentas
+                            Despachante
                           </TableHead>
                           <TableHead className="text-right hidden sm:table-cell">
                             Ponte
@@ -404,8 +404,8 @@ export default function Relatorios() {
                               {formatCurrency(sc.valorEmpresa)}
                             </TableCell>
                             <TableCell className="text-right text-sm hidden sm:table-cell">
-                              {sc.valorFerramentas > 0
-                                ? formatCurrency(sc.valorFerramentas)
+                              {sc.valorDespachante > 0
+                                ? formatCurrency(sc.valorDespachante)
                                 : "—"}
                             </TableCell>
                             <TableCell className="text-right text-sm hidden sm:table-cell">

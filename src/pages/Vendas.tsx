@@ -133,7 +133,7 @@ export default function Vendas() {
                     Empresa
                   </TableHead>
                   <TableHead className="text-right hidden md:table-cell">
-                    Ferramentas
+                    Despachante
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -173,8 +173,8 @@ export default function Vendas() {
                         {formatCurrency(vals.valorEmpresa)}
                       </TableCell>
                       <TableCell className="text-right text-sm hidden md:table-cell">
-                        {vals.valorFerramentas > 0
-                          ? formatCurrency(vals.valorFerramentas)
+                        {vals.valorDespachante > 0
+                          ? formatCurrency(vals.valorDespachante)
                           : "—"}
                       </TableCell>
                     </TableRow>

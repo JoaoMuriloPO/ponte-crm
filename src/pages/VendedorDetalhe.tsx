@@ -38,7 +38,7 @@ import {
   calculateSaleValues,
 } from "@/utils/calculations"
 import { formatCurrency, formatDate, formatDateISO } from "@/utils/format"
-import { EMPRESA_PERCENTUAL, FERRAMENTAS_PERCENTUAL } from "@/types"
+import { EMPRESA_PERCENTUAL, DESPACHANTE_PERCENTUAL } from "@/types"
 import type { Venda } from "@/types"
 import { getConfiguracoes } from "@/services/storage/localStorageService"
 
@@ -170,10 +170,10 @@ export default function VendedorDetalhe() {
                 <Badge variant="outline">{EMPRESA_PERCENTUAL}% — fixo</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Ferramentas</span>
-                <Badge variant={vendedor.ferramentasEnabled ? "default" : "secondary"}>
-                  {vendedor.ferramentasEnabled
-                    ? `${FERRAMENTAS_PERCENTUAL}% — ativo`
+                <span className="text-sm text-muted-foreground">Despachante</span>
+                <Badge variant={vendedor.despachanteEnabled ? "default" : "secondary"}>
+                  {vendedor.despachanteEnabled
+                    ? `${DESPACHANTE_PERCENTUAL}% — ativo`
                     : "Desativado"}
                 </Badge>
               </div>
@@ -191,13 +191,13 @@ export default function VendedorDetalhe() {
                 <span className="text-sm font-semibold">Total</span>
                 <Badge
                   variant={
-                    dist.empresa + dist.ferramentas + dist.vendedor + dist.proprietario === 100
+                    dist.empresa + dist.despachante + dist.vendedor + dist.proprietario === 100
                       ? "default"
                       : "destructive"
                   }
                 >
-                  {dist.empresa + dist.ferramentas + dist.vendedor + dist.proprietario}%
-                  {dist.empresa + dist.ferramentas + dist.vendedor + dist.proprietario === 100
+                  {dist.empresa + dist.despachante + dist.vendedor + dist.proprietario}%
+                  {dist.empresa + dist.despachante + dist.vendedor + dist.proprietario === 100
                     ? " ✓"
                     : " ⚠"}
                 </Badge>
@@ -382,13 +382,13 @@ export default function VendedorDetalhe() {
                     {formatCurrency(preview.valorEmpresa)}
                   </span>
                 </div>
-                {dist.ferramentas > 0 && (
+                {dist.despachante > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      Ferramentas ({dist.ferramentas}%)
+                      Despachante ({dist.despachante}%)
                     </span>
                     <span className="font-medium">
-                      {formatCurrency(preview.valorFerramentas)}
+                      {formatCurrency(preview.valorDespachante)}
                     </span>
                   </div>
                 )}
