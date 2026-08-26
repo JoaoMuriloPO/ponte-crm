@@ -1,48 +1,42 @@
 import { useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { DollarSign, ShoppingCart } from "lucide-react"
+import { Users, DollarSign, ShoppingCart, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { useVendedores } from "@/hooks/useVendedores"
 import { useVendas } from "@/hooks/useVendas"
-import { calculateSaleValues } from "@/utils/calculations"
-import { formatCurrency, formatDate } from "@/utils/format"
+import { calculateSellerTotals } from "@/utils/calculations"
+import { formatCurrency } from "@/utils/format"
 
 export default function Vendas() {
   const { vendedores } = useVendedores()
   const { vendas } = useVendas()
   const navigate = useNavigate()
 
-  const sortedVendas = useMemo(
-    () =>
-      [...vendas].sort(
-        (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
-      ),
+  const sellerSummaries = useMemo(() => {
+    return vendedores.map((v) => {
+      const vendasDoVendedor = vendas.filter((ve) => ve.vendedorId === v.id)
+      const totals = calculateSellerTotals(v, vendasDoVendedor)
+      return {
+        vendedor: v,
+        totals,
+        quantidadeVendas: vendasDoVendedor.length,
+      }
+    })
+  }, [vendedores, vendas])
+
+  const globalTotal = useMemo(
+    () => vendas.reduce((sum, v) => sum + v.valor, 0),
     [vendas]
   )
-
-  const vendedorMap = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const v of vendedores) {
-      map[v.id] = v.nome
-    }
-    return map
-  }, [vendedores])
 
   if (vendas.length === 0) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Vendas</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Baixar Relatório</h1>
           <p className="text-muted-foreground">
-            Todas as vendas registradas.
+            Resumo por ponte para download.
           </p>
         </div>
         <div className="flex flex-col items-center justify-center py-20">
@@ -51,7 +45,7 @@ export default function Vendas() {
           </div>
           <h2 className="mt-4 text-lg font-semibold">Nenhuma venda registrada</h2>
           <p className="mt-2 max-w-md text-center text-muted-foreground">
-            Registre vendas nos perfis dos pontes para vê-las aqui.
+            Registre vendas nos perfis dos pontes para gerar relatórios.
           </p>
         </div>
       </div>
@@ -61,130 +55,79 @@ export default function Vendas() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Vendas</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Baixar Relatório</h1>
         <p className="text-muted-foreground">
-          Todas as vendas registradas — {vendas.length} vendas no total.
+          Resumo de cada ponte — {vendas.length} vendas no total.
         </p>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Vendido
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(
-                vendas.reduce((sum, v) => sum + v.valor, 0)
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Quantidade de Vendas
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{vendas.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Média por Venda
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(
-                vendas.reduce((sum, v) => sum + v.valor, 0) / vendas.length
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sales table */}
+      {/* Global summary */}
       <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Ponte</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">
-                    Ponte
-                  </TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">
-                    Proprietário
-                  </TableHead>
-                  <TableHead className="text-right hidden md:table-cell">
-                    Empresa
-                  </TableHead>
-                  <TableHead className="text-right hidden md:table-cell">
-                    Despachante
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedVendas.map((venda) => {
-                  const vals = calculateSaleValues(
-                    venda.valor,
-                    venda.distribuicao
-                  )
-                  return (
-                    <TableRow
-                      key={venda.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() =>
-                        navigate(`/vendedores/${venda.vendedorId}`)
-                      }
-                    >
-                      <TableCell className="text-sm">
-                        {formatDate(venda.data)}
-                      </TableCell>
-                      <TableCell className="text-sm font-medium">
-                        {vendedorMap[venda.vendedorId] || "Desconhecido"} - Ponte
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {venda.descricao || "—"}
-                      </TableCell>
-                      <TableCell className="text-right font-medium text-sm">
-                        {formatCurrency(venda.valor)}
-                      </TableCell>
-                      <TableCell className="text-right text-sm hidden sm:table-cell">
-                        {formatCurrency(vals.valorVendedor)}
-                      </TableCell>
-                      <TableCell className="text-right text-sm hidden sm:table-cell">
-                        {formatCurrency(vals.valorProprietario)}
-                      </TableCell>
-                      <TableCell className="text-right text-sm hidden md:table-cell">
-                        {formatCurrency(vals.valorEmpresa)}
-                      </TableCell>
-                      <TableCell className="text-right text-sm hidden md:table-cell">
-                        {vals.valorDespachante > 0
-                          ? formatCurrency(vals.valorDespachante)
-                          : "—"}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Total Geral
+          </CardTitle>
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatCurrency(globalTotal)}</div>
+          <p className="text-xs text-muted-foreground">
+            {vendedores.length} pontes ativos
+          </p>
         </CardContent>
       </Card>
+
+      {/* Per-seller cards */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {sellerSummaries.map(({ vendedor, totals, quantidadeVendas }) => (
+          <Card
+            key={vendedor.id}
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate(`/vendedores/${vendedor.id}`)}
+          >
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-semibold">{vendedor.nome}</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    {quantidadeVendas} {quantidadeVendas === 1 ? "venda" : "vendas"}
+                  </p>
+                </div>
+              </div>
+              <Badge variant="outline">
+                <ArrowRight className="h-3 w-3" />
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Vendido</p>
+                  <p className="text-sm font-bold">{formatCurrency(totals.totalVendido)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Proprietário</p>
+                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(totals.totalProprietario)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ponte</p>
+                  <p className="text-sm font-bold">{formatCurrency(totals.totalVendedor)}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span>K10: {formatCurrency(totals.totalEmpresa)}</span>
+                {totals.totalDespachante > 0 && (
+                  <span>· Desp: {formatCurrency(totals.totalDespachante)}</span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

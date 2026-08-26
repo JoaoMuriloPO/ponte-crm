@@ -297,7 +297,7 @@ export default function Vendedores() {
                 Distribuição:
               </p>
               <div className="flex justify-between text-sm">
-                <span>Empresa</span>
+                <span>K10</span>
                 <span className="font-medium">{EMPRESA_PERCENTUAL}%</span>
               </div>
               {despachanteEnabled && (

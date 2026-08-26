@@ -166,7 +166,7 @@ export default function VendedorDetalhe() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Empresa</span>
+                <span className="text-sm text-muted-foreground">K10</span>
                 <Badge variant="outline">{EMPRESA_PERCENTUAL}% — fixo</Badge>
               </div>
               <div className="flex items-center justify-between">
@@ -179,11 +179,11 @@ export default function VendedorDetalhe() {
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Ponte</span>
+                <span className="text-sm font-medium">{vendedor.nome} — Ponte</span>
                 <span className="font-semibold">{vendedor.percentualVendedor}%</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{config.nomeProprietario} (Proprietário)</span>
+                <span className="text-sm font-medium">{config.nomeProprietario} — Proprietário</span>
                 <span className="font-semibold">{vendedor.percentualProprietario}%</span>
               </div>
               <Separator />
@@ -278,7 +278,7 @@ export default function VendedorDetalhe() {
                       Proprietário
                     </TableHead>
                     <TableHead className="text-right hidden md:table-cell">
-                      Empresa
+                      K10
                     </TableHead>
                     <TableHead className="w-8"></TableHead>
                   </TableRow>
@@ -376,7 +376,7 @@ export default function VendedorDetalhe() {
                 </p>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Empresa ({dist.empresa}%)
+                    K10 ({dist.empresa}%)
                   </span>
                   <span className="font-medium">
                     {formatCurrency(preview.valorEmpresa)}

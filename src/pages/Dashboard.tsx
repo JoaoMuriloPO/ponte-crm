@@ -83,24 +83,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Minha Comissão
-            </CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {formatCurrency(totals.totalProprietario)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total destinado a {config.nomeProprietario}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Empresa
+              K10
             </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -125,6 +108,23 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-muted-foreground">
               {totals.quantidadePontes} pontes ativos
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Minha Comissão
+            </CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              {formatCurrency(totals.totalProprietario)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total destinado a {config.nomeProprietario}
             </p>
           </CardContent>
         </Card>

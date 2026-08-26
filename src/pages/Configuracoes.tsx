@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Settings, Save, RotateCcw, Download, LogOut, Cloud, RefreshCw, CheckCircle } from "lucide-react"
+import { Settings, Save, RotateCcw, LogOut, Cloud, RefreshCw, CheckCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -210,29 +210,6 @@ export default function Configuracoes() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div>
-              <p className="text-sm font-medium">Dados de demonstração</p>
-              <p className="text-xs text-muted-foreground">
-                Carrega pontes e vendas de exemplo para testes.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                import("@/lib/demo-data").then((m) => {
-                  m.loadDemoData()
-                  refreshVendedores()
-                  refreshVendas()
-                  setNomeProprietario("João Murilo")
-                })
-              }}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Carregar demo
-            </Button>
-          </div>
-
           <div className="flex items-center justify-between rounded-lg border border-destructive/50 p-4">
             <div>
               <p className="text-sm font-medium text-destructive">
@@ -257,7 +234,7 @@ export default function Configuracoes() {
               <p className="text-sm font-medium">Sobre o sistema</p>
             </div>
             <p className="text-xs text-muted-foreground">
-              CRM Financeiro v1.1 — Sistema de controle financeiro de vendas para
+              CRM Financeiro v{import.meta.env.VITE_APP_VERSION || "1.2"} — Sistema de controle financeiro de vendas para
               proprietários e pontes. Dados armazenados localmente com opção de
               sincronização via GitHub Gist.
             </p>

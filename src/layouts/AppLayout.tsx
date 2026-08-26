@@ -3,7 +3,7 @@ import { Outlet, NavLink, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   Users,
-  DollarSign,
+  FileDown,
   BarChart3,
   Settings,
   Menu,
@@ -25,7 +25,7 @@ import { useTheme } from "@/hooks/useTheme"
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/vendedores", label: "Pontes", icon: Users },
-  { to: "/vendas", label: "Vendas", icon: DollarSign },
+  { to: "/vendas", label: "Baixar Relatório", icon: FileDown },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ]
@@ -37,21 +37,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2 px-6 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
           <TrendingUp className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-sm font-semibold leading-none">CRM Financeiro</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{config.nomeProprietario}</p>
+          <h1 className="text-sm font-semibold leading-none text-sidebar-foreground">CRM Financeiro</h1>
+          <p className="text-xs text-sidebar-foreground/60 mt-0.5">{config.nomeProprietario}</p>
         </div>
       </div>
 
       {/* Auth & Sync status */}
       {isAuthenticated && user && (
         <>
-          <Separator />
+          <Separator className="bg-sidebar-border" />
           <div className="px-6 py-3">
             <div className="flex items-center gap-2">
               <img
@@ -59,16 +59,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 alt={user.login}
                 className="h-6 w-6 rounded-full"
               />
-              <span className="text-xs font-medium truncate">{user.name}</span>
+              <span className="text-xs font-medium truncate text-sidebar-foreground">{user.name}</span>
             </div>
             <div className="flex items-center gap-2 mt-2">
               {lastSync ? (
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <span className="text-[10px] text-sidebar-foreground/60 flex items-center gap-1">
                   <Cloud className="h-3 w-3" />
                   Sync: {new Date(lastSync).toLocaleTimeString("pt-BR")}
                 </span>
               ) : (
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <span className="text-[10px] text-sidebar-foreground/60 flex items-center gap-1">
                   <CloudOff className="h-3 w-3" />
                   Sem sync
                 </span>
@@ -78,7 +78,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs flex-1"
+                className="h-7 text-xs flex-1 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 onClick={syncToGist}
                 disabled={isSyncing}
               >
@@ -92,7 +92,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs flex-1"
+                className="h-7 text-xs flex-1 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 onClick={loadFromGist}
                 disabled={isSyncing}
               >
@@ -108,7 +108,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </>
       )}
 
-      <Separator />
+      <Separator className="bg-sidebar-border" />
 
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
@@ -123,8 +123,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               onClick={onNavigate}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               }`}
             >
               <item.icon className="h-4 w-4" />
@@ -137,7 +137,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-3 pb-4">
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-muted-foreground"
+          className="w-full justify-start gap-3 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           onClick={toggleTheme}
         >
           {theme === "dark" ? (
@@ -158,7 +158,7 @@ export default function AppLayout() {
   return (
     <div className="flex h-screen bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r border-sidebar-border bg-sidebar">
         <SidebarContent />
       </aside>
 
@@ -171,7 +171,7 @@ export default function AppLayout() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
+            <SheetContent side="left" className="w-64 p-0 bg-sidebar">
               <div className="flex items-center justify-between px-6 py-4">
                 <span className="font-semibold">Menu</span>
                 <Button
