@@ -146,7 +146,7 @@ export default function VendedorDetalhe() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">{vendedor.nome} - Ponte</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{vendedor.nome} - Ponte</h1>
           <p className="text-muted-foreground">
             Ponte desde {formatDate(vendedor.createdAt)}
           </p>

@@ -115,7 +115,7 @@ export default function Vendedores() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Pontes</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Pontes</h1>
           <p className="text-muted-foreground">
             Gerencie seus pontes e configurações de comissão.
           </p>
