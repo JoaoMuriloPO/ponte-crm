@@ -121,11 +121,24 @@ function generatePdfHtml(
 
 function downloadReport(vendedor: Vendedor, vendas: Venda[], config: { nomeProprietario: string }) {
   const html = generatePdfHtml(vendedor, vendas, config)
-  const w = window.open("", "_blank")
-  if (w) {
-    w.document.write(html)
-    w.document.close()
-    setTimeout(() => w.print(), 300)
+  const iframe = document.createElement("iframe")
+  iframe.style.position = "fixed"
+  iframe.style.right = "0"
+  iframe.style.bottom = "0"
+  iframe.style.width = "0"
+  iframe.style.height = "0"
+  iframe.style.border = "none"
+  document.body.appendChild(iframe)
+  const doc = iframe.contentWindow?.document
+  if (doc) {
+    doc.open()
+    doc.write(html)
+    doc.close()
+    setTimeout(() => {
+      iframe.contentWindow?.focus()
+      iframe.contentWindow?.print()
+      setTimeout(() => document.body.removeChild(iframe), 1000)
+    }, 300)
   }
 }
 
