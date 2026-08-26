@@ -50,7 +50,7 @@ export async function findOrCreateGist(token: string): Promise<string> {
 
   // Search through user's gists
   try {
-    const gists = await octokit.paginate(octokit.gists.listPublic, {
+    const gists = await octokit.paginate(octokit.gists.list, {
       per_page: 100,
     })
 
