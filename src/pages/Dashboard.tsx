@@ -170,7 +170,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Desempenho por Ponte</CardTitle>
+              <CardTitle className="text-lg text-foreground">Desempenho por Ponte</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Resumo de vendas de cada ponte.
               </p>
@@ -258,7 +258,7 @@ function EmptyState({ onNavigate }: { onNavigate: (path: string) => void }) {
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
         <TrendingUp className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h2 className="mt-4 text-lg font-semibold">Bem-vindo ao CRM Financeiro</h2>
+      <h2 className="mt-4 text-lg font-semibold text-foreground">Bem-vindo ao CRM Financeiro</h2>
       <p className="mt-2 max-w-md text-center text-muted-foreground">
         Cadastre seu primeiro ponte para começar a acompanhar suas vendas e
         comissões.

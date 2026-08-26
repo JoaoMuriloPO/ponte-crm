@@ -185,7 +185,7 @@ export default function Vendas() {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <ShoppingCart className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold">Nenhuma venda registrada</h2>
+          <h2 className="mt-4 text-lg font-semibold text-foreground">Nenhuma venda registrada</h2>
           <p className="mt-2 max-w-md text-center text-muted-foreground">
             Registre vendas nos perfis dos pontes para gerar relatórios.
           </p>

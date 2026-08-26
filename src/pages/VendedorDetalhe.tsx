@@ -254,7 +254,7 @@ export default function VendedorDetalhe() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <ShoppingCart className="h-6 w-6 text-muted-foreground" />
               </div>
-              <p className="mt-3 text-sm font-medium">Nenhuma venda registrada</p>
+              <p className="mt-3 text-sm font-medium text-foreground">Nenhuma venda registrada</p>
               <p className="text-xs text-muted-foreground">
                 Registre a primeira venda deste ponte.
               </p>

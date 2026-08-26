@@ -171,9 +171,9 @@ export default function AppLayout() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 bg-sidebar">
+            <SheetContent side="left" className="w-64 p-0 bg-sidebar" showCloseButton={false}>
               <div className="flex items-center justify-between px-6 py-4">
-                <span className="font-semibold">Menu</span>
+                <span className="font-semibold text-sidebar-foreground">Menu</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -188,7 +188,7 @@ export default function AppLayout() {
           </Sheet>
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            <span className="font-semibold text-sm">CRM Financeiro</span>
+            <span className="font-semibold text-sm text-foreground">CRM Financeiro</span>
           </div>
         </header>
 

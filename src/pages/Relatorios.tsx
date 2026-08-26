@@ -152,7 +152,7 @@ export default function Relatorios() {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <BarChart3 className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold">Nenhum dado encontrado</h2>
+          <h2 className="mt-4 text-lg font-semibold text-foreground">Nenhum dado encontrado</h2>
           <p className="mt-2 max-w-md text-center text-muted-foreground">
             Ajuste os filtros ou registre vendas para ver os relatórios.
           </p>
@@ -283,7 +283,7 @@ export default function Relatorios() {
 
           {/* Per-seller expandable sections */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold">Vendas por Ponte</h3>
+            <h3 className="text-lg font-semibold text-foreground">Vendas por Ponte</h3>
             {sellerDetails.map(({ vendedor, vendas: vendasSeller, totals }) => {
               const isExpanded = expandedSellers.has(vendedor.id)
               return (

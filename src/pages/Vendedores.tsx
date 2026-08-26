@@ -379,7 +379,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
         <Users className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h2 className="mt-4 text-lg font-semibold">Nenhum ponte cadastrado</h2>
+      <h2 className="mt-4 text-lg font-semibold text-foreground">Nenhum ponte cadastrado</h2>
       <p className="mt-2 max-w-md text-center text-muted-foreground">
         Cadastre seu primeiro ponte para começar a acompanhar suas vendas.
       </p>
