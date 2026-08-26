@@ -79,6 +79,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setGistId(gId)
     localStorage.setItem(STORAGE_KEY_GIST, gId)
 
+    // Auto-load data from gist
+    setIsSyncing(true)
+    try {
+      const data = await loadGistData(result.access_token, gId)
+      if (data) {
+        localStorage.setItem("crm_vendedores", JSON.stringify(data.vendedores))
+        localStorage.setItem("crm_vendas", JSON.stringify(data.vendas))
+        localStorage.setItem("crm_configuracoes", JSON.stringify(data.configuracoes))
+        const now = new Date().toISOString()
+        setLastSync(now)
+        localStorage.setItem(STORAGE_KEY_SYNC, now)
+        window.dispatchEvent(new Event("crm-data-synced"))
+      }
+    } finally {
+      setIsSyncing(false)
+    }
+
     return true
   }, [])
 
@@ -128,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const now = new Date().toISOString()
       setLastSync(now)
       localStorage.setItem(STORAGE_KEY_SYNC, now)
+      window.dispatchEvent(new Event("crm-data-synced"))
       return true
     } finally {
       setIsSyncing(false)

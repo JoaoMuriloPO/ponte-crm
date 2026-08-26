@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import type { Vendedor } from "@/types"
 import {
   getVendedores,
@@ -13,6 +13,12 @@ export function useVendedores() {
 
   const refresh = useCallback(() => {
     setVendedores(getVendedores())
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setVendedores(getVendedores())
+    window.addEventListener("crm-data-synced", handler)
+    return () => window.removeEventListener("crm-data-synced", handler)
   }, [])
 
   const add = useCallback((vendedor: Vendedor) => {

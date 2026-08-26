@@ -7,7 +7,7 @@ export default function AuthCallback() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { handleCallback } = useAuth()
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
+  const [status, setStatus] = useState<"loading" | "syncing" | "success" | "error">("loading")
 
   useEffect(() => {
     const code = searchParams.get("code")
@@ -25,8 +25,11 @@ export default function AuthCallback() {
 
     handleCallback(code).then((ok) => {
       if (ok) {
-        setStatus("success")
-        setTimeout(() => navigate("/configuracoes"), 1500)
+        setStatus("syncing")
+        setTimeout(() => {
+          setStatus("success")
+          setTimeout(() => navigate("/configuracoes"), 1000)
+        }, 500)
       } else {
         setStatus("error")
       }
@@ -40,6 +43,13 @@ export default function AuthCallback() {
           <>
             <RefreshCw className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Conectando com GitHub...</p>
+          </>
+        )}
+        {status === "syncing" && (
+          <>
+            <RefreshCw className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+            <p className="text-sm font-medium">Carregando seus dados...</p>
+            <p className="text-xs text-muted-foreground">Sincronizando com a nuvem</p>
           </>
         )}
         {status === "success" && (
