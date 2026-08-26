@@ -44,7 +44,7 @@ export default function AuthCallback() {
         )}
         {status === "success" && (
           <>
-            <CheckCircle className="h-8 w-8 text-emerald-600" />
+            <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
             <p className="text-sm font-medium">Conectado com sucesso!</p>
             <p className="text-xs text-muted-foreground">Redirecionando...</p>
           </>

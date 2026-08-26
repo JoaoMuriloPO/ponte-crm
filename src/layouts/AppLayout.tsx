@@ -12,12 +12,15 @@ import {
   Cloud,
   CloudOff,
   RefreshCw,
+  Moon,
+  Sun,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { getConfiguracoes } from "@/services/storage/localStorageService"
 import { useAuth } from "@/contexts/AuthContext"
+import { useTheme } from "@/hooks/useTheme"
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -31,6 +34,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation()
   const config = getConfiguracoes()
   const { user, isAuthenticated, isSyncing, lastSync, syncToGist, loadFromGist } = useAuth()
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="flex h-full flex-col">
@@ -129,6 +133,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           )
         })}
       </nav>
+
+      <div className="px-3 pb-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 text-muted-foreground"
+          onClick={toggleTheme}
+        >
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+          {theme === "dark" ? "Modo claro" : "Modo escuro"}
+        </Button>
+      </div>
     </div>
   )
 }

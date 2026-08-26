@@ -200,7 +200,7 @@ export default function Relatorios() {
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-600">
+                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(report.totalProprietario)}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -285,9 +285,9 @@ export default function Relatorios() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={sellerBarData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" fontSize={12} />
-                    <YAxis fontSize={12} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" fontSize={12} tick={{ fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis fontSize={12} tick={{ fill: "hsl(var(--muted-foreground))" }} />
                     <Tooltip
                       formatter={(value: unknown) => formatCurrency(Number(value))}
                     />
@@ -352,11 +352,11 @@ export default function Relatorios() {
                     </p>
                   </div>
                   <div className="rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-emerald-600 mb-2">
+                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-2">
                       <UserCheck className="h-4 w-4" />
                       <span className="text-sm font-medium">{config.nomeProprietario} (Proprietário)</span>
                     </div>
-                    <p className="text-2xl font-bold text-emerald-600">
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(report.totalProprietario)}
                     </p>
                   </div>

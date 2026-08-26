@@ -222,11 +222,11 @@ export default function VendedorDetalhe() {
                   <p className="text-lg font-bold">{totals.quantidadeVendas}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1">
                     <UserCheck className="h-3.5 w-3.5" />
                     <span className="text-xs">Proprietário</span>
                   </div>
-                  <p className="text-lg font-bold text-emerald-600">
+                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(totals.totalProprietario)}
                   </p>
                 </div>
@@ -404,7 +404,7 @@ export default function VendedorDetalhe() {
                   <span className="text-muted-foreground">
                     Proprietário ({dist.proprietario}%)
                   </span>
-                  <span className="font-medium text-emerald-600">
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(preview.valorProprietario)}
                   </span>
                 </div>

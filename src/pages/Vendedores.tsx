@@ -317,7 +317,7 @@ export default function Vendedores() {
               <div className="border-t pt-1.5 mt-1.5">
                 <div className="flex justify-between text-sm font-semibold">
                   <span>Total</span>
-                  <span className={isValid ? "text-emerald-600" : "text-destructive"}>
+                  <span className={isValid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}>
                     {totalDist}% {isValid ? "✓" : "⚠"}
                   </span>
                 </div>

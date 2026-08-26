@@ -113,7 +113,7 @@ export default function Configuracoes() {
                     </div>
                   </>
                 )}
-                <Badge variant="default" className="bg-emerald-600">
+                <Badge variant="default" className="bg-emerald-600 dark:bg-emerald-500">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Conectado
                 </Badge>
