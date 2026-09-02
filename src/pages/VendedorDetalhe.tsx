@@ -167,15 +167,21 @@ export default function VendedorDetalhe() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">K10</span>
-                <Badge variant="outline">{EMPRESA_PERCENTUAL}% — fixo</Badge>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{formatCurrency(totals?.totalEmpresa ?? 0)}</span>
+                  <Badge variant="outline">{EMPRESA_PERCENTUAL}% — fixo</Badge>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Despachante</span>
-                <Badge variant={vendedor.despachanteEnabled ? "default" : "secondary"}>
-                  {vendedor.despachanteEnabled
-                    ? `${DESPACHANTE_PERCENTUAL}% — ativo`
-                    : "Desativado"}
-                </Badge>
+                {vendedor.despachanteEnabled ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{formatCurrency(totals?.totalDespachante ?? 0)}</span>
+                    <Badge variant="default">{DESPACHANTE_PERCENTUAL}% — ativo</Badge>
+                  </div>
+                ) : (
+                  <Badge variant="secondary">✕ Não habilitado</Badge>
+                )}
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -216,10 +222,10 @@ export default function VendedorDetalhe() {
                 </div>
                 <div className="rounded-lg border p-3">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <ShoppingCart className="h-3.5 w-3.5" />
-                    <span className="text-xs">Vendas</span>
+                    <Building2 className="h-3.5 w-3.5" />
+                    <span className="text-xs">K10 Total</span>
                   </div>
-                  <p className="text-lg font-bold">{totals.quantidadeVendas}</p>
+                  <p className="text-lg font-bold">{formatCurrency(totals.totalEmpresa + totals.totalDespachante)}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1">
@@ -272,13 +278,16 @@ export default function VendedorDetalhe() {
                     <TableHead>Descrição</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="text-right hidden sm:table-cell">
+                      K10
+                    </TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">
+                      Despachante
+                    </TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">
                       Ponte
                     </TableHead>
                     <TableHead className="text-right hidden sm:table-cell">
                       Proprietário
-                    </TableHead>
-                    <TableHead className="text-right hidden md:table-cell">
-                      K10
                     </TableHead>
                     <TableHead className="w-8"></TableHead>
                   </TableRow>
@@ -298,13 +307,18 @@ export default function VendedorDetalhe() {
                           {formatCurrency(venda.valor)}
                         </TableCell>
                         <TableCell className="text-right text-sm hidden sm:table-cell">
+                          {formatCurrency(vals.valorEmpresa)}
+                        </TableCell>
+                        <TableCell className="text-right text-sm hidden sm:table-cell">
+                          {vals.valorDespachante > 0
+                            ? formatCurrency(vals.valorDespachante)
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-right text-sm hidden sm:table-cell">
                           {formatCurrency(vals.valorVendedor)}
                         </TableCell>
                         <TableCell className="text-right text-sm hidden sm:table-cell">
                           {formatCurrency(vals.valorProprietario)}
-                        </TableCell>
-                        <TableCell className="text-right text-sm hidden md:table-cell">
-                          {formatCurrency(vals.valorEmpresa)}
                         </TableCell>
                         <TableCell>
                           <Button

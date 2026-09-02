@@ -240,7 +240,7 @@ export default function Vendas() {
 
       {/* Per-seller cards */}
       <div className="grid gap-4 sm:grid-cols-2">
-        {sellerSummaries.map(({ vendedor, vendas: vendasSeller, totals, quantidadeVendas }) => (
+        {sellerSummaries.map(({ vendedor, vendas: vendasSeller, totals }) => (
           <Card key={vendedor.id} className="transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div
@@ -253,7 +253,7 @@ export default function Vendas() {
                 <div className="min-w-0">
                   <CardTitle className="text-sm font-semibold truncate">{vendedor.nome}</CardTitle>
                   <p className="text-xs text-muted-foreground">
-                    {quantidadeVendas} {quantidadeVendas === 1 ? "venda" : "vendas"}
+                    K10: {formatCurrency(totals.totalEmpresa + totals.totalDespachante)}
                   </p>
                 </div>
               </div>
