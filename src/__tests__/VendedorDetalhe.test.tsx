@@ -89,11 +89,10 @@ describe("VendedorDetalhe", () => {
     expect(addVenda).not.toHaveBeenCalled()
   })
 
-  it("habilita distribuição personalizada com auto-balance entre valores", () => {
+  it("mostra no placeholder quanto falta ao preencher um lado", () => {
     render(<VendedorDetalhe />)
     fireEvent.click(screen.getByRole("button", { name: "Nova venda" }))
 
-    // Valor da venda
     fireEvent.change(screen.getByLabelText("Valor da venda"), {
       target: { value: "10000" },
     })
@@ -105,9 +104,12 @@ describe("VendedorDetalhe", () => {
     const ponteInput = screen.getByLabelText("João — Ponte")
     const propInput = screen.getByLabelText("Proprietário")
 
-    // Ao preencher um lado, o outro fecha automaticamente para 100%
+    // Ao preencher um lado, o outro sugere no placeholder o que falta
     fireEvent.change(ponteInput, { target: { value: "1500" } })
-    expect((propInput as HTMLInputElement).value).toBe("1500")
+    expect((propInput as HTMLInputElement).placeholder).toBe("1500")
+
+    // O usuário preenche o outro lado livremente
+    fireEvent.change(propInput, { target: { value: "1500" } })
 
     const saveButton = screen.getByRole("button", { name: "Registrar venda" })
     expect(saveButton).toBeEnabled()
@@ -120,7 +122,7 @@ describe("VendedorDetalhe", () => {
     expect(nova.distribuicao.proprietario).toBe(15)
   })
 
-  it("auto-balance ao editar por porcentagem", () => {
+  it("edita por porcentagem com placeholder sugerido", () => {
     render(<VendedorDetalhe />)
     fireEvent.click(screen.getByRole("button", { name: "Nova venda" }))
 
@@ -134,11 +136,16 @@ describe("VendedorDetalhe", () => {
 
     const pctPonte = screen.getByLabelText("Porcentagem da ponte")
     const ponteInput = screen.getByLabelText("João — Ponte")
+    const pctProp = screen.getByLabelText("Porcentagem do proprietário")
     const propInput = screen.getByLabelText("Proprietário")
 
-    // 20% no ponte => R$ 2.000; proprietário fecha o restante
+    // 20% no ponte => R$ 2.000
     fireEvent.change(pctPonte, { target: { value: "20" } })
     expect((ponteInput as HTMLInputElement).value).toBe("2000")
+    // O outro lado sugere no placeholder os 10% restantes
+    expect((pctProp as HTMLInputElement).placeholder).toBe("10")
+
+    fireEvent.change(pctProp, { target: { value: "10" } })
     expect((propInput as HTMLInputElement).value).toBe("1000")
 
     fireEvent.click(screen.getByRole("button", { name: "Registrar venda" }))
@@ -160,7 +167,9 @@ describe("VendedorDetalhe", () => {
     )
 
     const ponteInput = screen.getByLabelText("João — Ponte")
+    const propInput = screen.getByLabelText("Proprietário")
     fireEvent.change(ponteInput, { target: { value: "1400" } })
+    fireEvent.change(propInput, { target: { value: "1600" } })
 
     // Enquanto digita, o erro ainda não aparece
     expect(
@@ -183,8 +192,8 @@ describe("VendedorDetalhe", () => {
     ).toBeInTheDocument()
     expect(addVenda).not.toHaveBeenCalled()
 
-    // Ao reajustar um lado, o erro some
-    fireEvent.change(ponteInput, { target: { value: "1800" } })
+    // Ao ajustar um lado, o erro some
+    fireEvent.change(propInput, { target: { value: "2200" } })
     expect(
       screen.queryByText("Os percentuais precisam totalizar 100%.")
     ).not.toBeInTheDocument()

@@ -81,6 +81,8 @@ export default function VendedorDetalhe() {
   const [customProprietarioValue, setCustomProprietarioValue] = useState("")
   const [customPontePct, setCustomPontePct] = useState("")
   const [customProprietarioPct, setCustomProprietarioPct] = useState("")
+  const [customPonteClamped, setCustomPonteClamped] = useState(false)
+  const [customProprietarioClamped, setCustomProprietarioClamped] = useState(false)
   const [attemptedCustomSave, setAttemptedCustomSave] = useState(false)
 
   if (!vendedor) {
@@ -110,6 +112,8 @@ export default function VendedorDetalhe() {
     setCustomProprietarioValue("")
     setCustomPontePct("")
     setCustomProprietarioPct("")
+    setCustomPonteClamped(false)
+    setCustomProprietarioClamped(false)
     setAttemptedCustomSave(false)
     setSaleDialogOpen(true)
   }
@@ -132,6 +136,8 @@ export default function VendedorDetalhe() {
     setAttemptedCustomSave(false)
     setCustomPontePct("")
     setCustomProprietarioPct("")
+    setCustomPonteClamped(false)
+    setCustomProprietarioClamped(false)
     if (custom) {
       const vals = calculateSaleValues(venda.valor, venda.distribuicao)
       setCustomPonteValue(String(Math.round(vals.valorVendedor)))
@@ -146,6 +152,8 @@ export default function VendedorDetalhe() {
 
   function handleToggleCustom(checked: boolean) {
     setCustomDistribution(checked)
+    setCustomPonteClamped(false)
+    setCustomProprietarioClamped(false)
     if (checked) {
       const parsed = parseCurrencyInput(saleValor)
       if (!isNaN(parsed) && parsed > 0) setCustomDefaults(parsed)
@@ -202,61 +210,88 @@ export default function VendedorDetalhe() {
     setAttemptedCustomSave(false)
     const cleaned = raw.replace(/[^0-9.,]/g, "")
     setCustomPonteValue(cleaned)
+    setCustomPonteClamped(false)
     if (isNaN(parsedValor) || parsedValor <= 0) return
     const parsed = parseCurrencyInput(cleaned)
     if (isNaN(parsed)) return
+    if (parsed > customAvailableValue) setCustomPonteClamped(true)
     const ponte = Math.min(parsed, customAvailableValue)
-    const prop = round2(customAvailableValue - ponte)
     setCustomPonteValue(moneyStr(ponte))
-    setCustomProprietarioValue(moneyStr(prop))
     setCustomPontePct(pctStr((ponte / parsedValor) * 100))
-    setCustomProprietarioPct(pctStr((prop / parsedValor) * 100))
   }
 
   function handleProprietarioValueChange(raw: string) {
     setAttemptedCustomSave(false)
     const cleaned = raw.replace(/[^0-9.,]/g, "")
     setCustomProprietarioValue(cleaned)
+    setCustomProprietarioClamped(false)
     if (isNaN(parsedValor) || parsedValor <= 0) return
     const parsed = parseCurrencyInput(cleaned)
     if (isNaN(parsed)) return
+    if (parsed > customAvailableValue) setCustomProprietarioClamped(true)
     const prop = Math.min(parsed, customAvailableValue)
-    const ponte = round2(customAvailableValue - prop)
     setCustomProprietarioValue(moneyStr(prop))
-    setCustomPonteValue(moneyStr(ponte))
     setCustomProprietarioPct(pctStr((prop / parsedValor) * 100))
-    setCustomPontePct(pctStr((ponte / parsedValor) * 100))
   }
 
   function handlePontePctChange(raw: string) {
     setAttemptedCustomSave(false)
     const cleaned = raw.replace(/[^0-9.,]/g, "")
     setCustomPontePct(cleaned)
+    setCustomPonteClamped(false)
     if (isNaN(parsedValor) || parsedValor <= 0) return
     const pct = parsePctInput(cleaned)
     if (isNaN(pct)) return
+    if (pct > customAvailablePct) setCustomPonteClamped(true)
     const clamped = Math.min(pct, customAvailablePct)
     const ponte = round2((parsedValor * clamped) / 100)
-    const prop = round2(customAvailableValue - ponte)
     setCustomPonteValue(moneyStr(ponte))
-    setCustomProprietarioValue(moneyStr(prop))
-    setCustomProprietarioPct(pctStr((prop / parsedValor) * 100))
+    setCustomPontePct(pctStr(clamped))
   }
 
   function handleProprietarioPctChange(raw: string) {
     setAttemptedCustomSave(false)
     const cleaned = raw.replace(/[^0-9.,]/g, "")
     setCustomProprietarioPct(cleaned)
+    setCustomProprietarioClamped(false)
     if (isNaN(parsedValor) || parsedValor <= 0) return
     const pct = parsePctInput(cleaned)
     if (isNaN(pct)) return
+    if (pct > customAvailablePct) setCustomProprietarioClamped(true)
     const clamped = Math.min(pct, customAvailablePct)
     const prop = round2((parsedValor * clamped) / 100)
-    const ponte = round2(customAvailableValue - prop)
     setCustomProprietarioValue(moneyStr(prop))
-    setCustomPonteValue(moneyStr(ponte))
-    setCustomPontePct(pctStr((ponte / parsedValor) * 100))
+    setCustomProprietarioPct(pctStr(clamped))
   }
+
+  const ponteSugerido =
+    !isNaN(parsedValor) &&
+    parsedValor > 0 &&
+    !isNaN(parsedProprietario) &&
+    customAvailableValue - parsedProprietario >= 0
+      ? moneyStr(round2(customAvailableValue - parsedProprietario))
+      : ""
+  const proprietarioSugerido =
+    !isNaN(parsedValor) &&
+    parsedValor > 0 &&
+    !isNaN(parsedPonte) &&
+    customAvailableValue - parsedPonte >= 0
+      ? moneyStr(round2(customAvailableValue - parsedPonte))
+      : ""
+  const pontePctSugerido =
+    !isNaN(parsedValor) &&
+    parsedValor > 0 &&
+    !isNaN(parsedProprietario) &&
+    customAvailableValue - parsedProprietario >= 0
+      ? pctStr(((customAvailableValue - parsedProprietario) / parsedValor) * 100)
+      : ""
+  const proprietarioPctSugerido =
+    !isNaN(parsedValor) &&
+    parsedValor > 0 &&
+    !isNaN(parsedPonte) &&
+    customAvailableValue - parsedPonte >= 0
+      ? pctStr(((customAvailableValue - parsedPonte) / parsedValor) * 100)
+      : ""
 
   const previewDist: Distribuicao = customDistribution
     ? buildCustomDistribution(
@@ -285,14 +320,6 @@ export default function VendedorDetalhe() {
       : false
   const customValuesFilled =
     !isNaN(parsedPonte) && !isNaN(parsedProprietario)
-  const customPonteClamped =
-    customDistribution &&
-    !isNaN(parsePctInput(customPontePct)) &&
-    parsePctInput(customPontePct) > customAvailablePct
-  const customProprietarioClamped =
-    customDistribution &&
-    !isNaN(parsePctInput(customProprietarioPct)) &&
-    parsePctInput(customProprietarioPct) > customAvailablePct
 
   function getPreviewSaleValues(): Omit<
     import("@/types").SaleCalculation,
@@ -650,7 +677,7 @@ export default function VendedorDetalhe() {
                             className="pl-9"
                             value={customPonteValue}
                             onChange={(e) => handlePonteValueChange(e.target.value)}
-                            placeholder="0,00"
+                            placeholder={ponteSugerido || "0,00"}
                           />
                         </div>
                         <div className="relative flex-1">
@@ -666,7 +693,7 @@ export default function VendedorDetalhe() {
                             }
                             value={customPontePct}
                             onChange={(e) => handlePontePctChange(e.target.value)}
-                            placeholder="0"
+                            placeholder={pontePctSugerido || "0"}
                           />
                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                             %
@@ -700,7 +727,7 @@ export default function VendedorDetalhe() {
                             onChange={(e) =>
                               handleProprietarioValueChange(e.target.value)
                             }
-                            placeholder="0,00"
+                            placeholder={proprietarioSugerido || "0,00"}
                           />
                         </div>
                         <div className="relative flex-1">
@@ -718,7 +745,7 @@ export default function VendedorDetalhe() {
                             onChange={(e) =>
                               handleProprietarioPctChange(e.target.value)
                             }
-                            placeholder="0"
+                            placeholder={proprietarioPctSugerido || "0"}
                           />
                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                             %
@@ -736,9 +763,9 @@ export default function VendedorDetalhe() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Um ajusta automaticamente o outro para fechar os{" "}
-                    {customAvailablePct}% disponíveis (K10 + Despachante são
-                    fixos).
+                    Digite o valor ou a % de cada um — o outro lado mostra no
+                    placeholder quanto falta para fechar os {customAvailablePct}%
+                    disponíveis (K10 + Despachante são fixos).
                   </p>
                 </div>
               )}
