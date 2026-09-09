@@ -660,7 +660,7 @@ export default function VendedorDetalhe() {
 
               {customDistribution && (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
                     <div className="space-y-1.5">
                       <Label htmlFor="custom-ponte" className="text-xs">
                         {vendedor.nome} — Ponte
