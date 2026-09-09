@@ -665,40 +665,38 @@ export default function VendedorDetalhe() {
                       <Label htmlFor="custom-ponte" className="text-xs">
                         {vendedor.nome} — Ponte
                       </Label>
-                      <div className="flex items-end gap-2">
-                        <div className="relative w-[45%]">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                            R$
-                          </span>
-                          <Input
-                            id="custom-ponte"
-                            type="text"
-                            inputMode="decimal"
-                            className="pl-9"
-                            value={customPonteValue}
-                            onChange={(e) => handlePonteValueChange(e.target.value)}
-                            placeholder={ponteSugerido || "0,00"}
-                          />
-                        </div>
-                        <div className="relative flex-1">
-                          <Input
-                            id="custom-ponte-pct"
-                            type="text"
-                            inputMode="decimal"
-                            aria-label="Porcentagem da ponte"
-                            className={
-                              customPonteClamped
-                                ? "border-destructive pr-7 text-right"
-                                : "pr-7 text-right"
-                            }
-                            value={customPontePct}
-                            onChange={(e) => handlePontePctChange(e.target.value)}
-                            placeholder={pontePctSugerido || "0"}
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                            %
-                          </span>
-                        </div>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          R$
+                        </span>
+                        <Input
+                          id="custom-ponte"
+                          type="text"
+                          inputMode="decimal"
+                          className="pl-9"
+                          value={customPonteValue}
+                          onChange={(e) => handlePonteValueChange(e.target.value)}
+                          placeholder={ponteSugerido || "0,00"}
+                        />
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="custom-ponte-pct"
+                          type="text"
+                          inputMode="decimal"
+                          aria-label="Porcentagem da ponte"
+                          className={
+                            customPonteClamped
+                              ? "border-destructive pr-7 text-right"
+                              : "pr-7 text-right"
+                          }
+                          value={customPontePct}
+                          onChange={(e) => handlePontePctChange(e.target.value)}
+                          placeholder={pontePctSugerido || "0"}
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          %
+                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {pontePct.toFixed(2)}% da venda
@@ -713,44 +711,42 @@ export default function VendedorDetalhe() {
                       <Label htmlFor="custom-proprietario" className="text-xs">
                         {config.nomeProprietario}
                       </Label>
-                      <div className="flex items-end gap-2">
-                        <div className="relative w-[45%]">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                            R$
-                          </span>
-                          <Input
-                            id="custom-proprietario"
-                            type="text"
-                            inputMode="decimal"
-                            className="pl-9"
-                            value={customProprietarioValue}
-                            onChange={(e) =>
-                              handleProprietarioValueChange(e.target.value)
-                            }
-                            placeholder={proprietarioSugerido || "0,00"}
-                          />
-                        </div>
-                        <div className="relative flex-1">
-                          <Input
-                            id="custom-proprietario-pct"
-                            type="text"
-                            inputMode="decimal"
-                            aria-label="Porcentagem do proprietário"
-                            className={
-                              customProprietarioClamped
-                                ? "border-destructive pr-7 text-right"
-                                : "pr-7 text-right"
-                            }
-                            value={customProprietarioPct}
-                            onChange={(e) =>
-                              handleProprietarioPctChange(e.target.value)
-                            }
-                            placeholder={proprietarioPctSugerido || "0"}
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                            %
-                          </span>
-                        </div>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          R$
+                        </span>
+                        <Input
+                          id="custom-proprietario"
+                          type="text"
+                          inputMode="decimal"
+                          className="pl-9"
+                          value={customProprietarioValue}
+                          onChange={(e) =>
+                            handleProprietarioValueChange(e.target.value)
+                          }
+                          placeholder={proprietarioSugerido || "0,00"}
+                        />
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="custom-proprietario-pct"
+                          type="text"
+                          inputMode="decimal"
+                          aria-label="Porcentagem do proprietário"
+                          className={
+                            customProprietarioClamped
+                              ? "border-destructive pr-7 text-right"
+                              : "pr-7 text-right"
+                          }
+                          value={customProprietarioPct}
+                          onChange={(e) =>
+                            handleProprietarioPctChange(e.target.value)
+                          }
+                          placeholder={proprietarioPctSugerido || "0"}
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          %
+                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {proprietarioPct.toFixed(2)}% da venda
