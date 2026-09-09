@@ -42,10 +42,12 @@ export default function Dashboard() {
   )
 
   const sellerTotals = useMemo(() => {
-    return vendedores.map((v) => {
-      const vendasDoVendedor = vendas.filter((ve) => ve.vendedorId === v.id)
-      return calculateSellerTotals(v, vendasDoVendedor)
-    })
+    return vendedores
+      .map((v) => {
+        const vendasDoVendedor = vendas.filter((ve) => ve.vendedorId === v.id)
+        return calculateSellerTotals(v, vendasDoVendedor)
+      })
+      .sort((a, b) => b.totalVendido - a.totalVendido)
   }, [vendedores, vendas])
 
   if (vendedores.length === 0 && vendas.length === 0) {
@@ -61,8 +63,38 @@ export default function Dashboard() {
         </p>
       </div>
 
+      {/* Destaque: Minha Comissão */}
+      <Card className="border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10">
+        <CardContent className="py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15">
+                <UserCheck className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Minha Comissão
+                </p>
+                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 sm:text-4xl">
+                  {formatCurrency(totals.totalProprietario)}
+                </p>
+              </div>
+            </div>
+            <div className="text-left sm:text-right">
+              <p className="text-xs text-muted-foreground">
+                Total destinado a {config.nomeProprietario}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {totals.quantidadeVendas} vendas · {totals.quantidadePontes}{" "}
+                {totals.quantidadePontes === 1 ? "ponte" : "pontes"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Main cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -108,23 +140,6 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-muted-foreground">
               {totals.quantidadePontes} pontes ativos
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Minha Comissão
-            </CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {formatCurrency(totals.totalProprietario)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total destinado a {config.nomeProprietario}
             </p>
           </CardContent>
         </Card>

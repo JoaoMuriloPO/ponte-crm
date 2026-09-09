@@ -8,6 +8,7 @@ import {
   UserCheck,
   Building2,
   Trash2,
+  Pencil,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import {
   Table,
   TableBody,
@@ -36,17 +38,24 @@ import {
   getDistributionPercentages,
   calculateSellerTotals,
   calculateSaleValues,
+  buildCustomDistribution,
+  validateCustomDistribution,
 } from "@/utils/calculations"
 import { formatCurrency, formatDate, formatDateISO } from "@/utils/format"
 import { EMPRESA_PERCENTUAL, DESPACHANTE_PERCENTUAL } from "@/types"
-import type { Venda } from "@/types"
+import type { Distribuicao, Venda } from "@/types"
 import { getConfiguracoes } from "@/services/storage/localStorageService"
 
 export default function VendedorDetalhe() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { getById } = useVendedores()
-  const { getByVendedor, add: addVenda, remove: removeVenda } = useVendas()
+  const {
+    getByVendedor,
+    add: addVenda,
+    update: updateVenda,
+    remove: removeVenda,
+  } = useVendas()
   const config = getConfiguracoes()
 
   const vendedor = id ? getById(id) : undefined
@@ -59,11 +68,17 @@ export default function VendedorDetalhe() {
 
   const [saleDialogOpen, setSaleDialogOpen] = useState(false)
   const [deleteSaleId, setDeleteSaleId] = useState<string | null>(null)
+  const [editingSaleId, setEditingSaleId] = useState<string | null>(null)
 
   // Sale form
   const [saleValor, setSaleValor] = useState("")
   const [saleData, setSaleData] = useState(formatDateISO(new Date()))
   const [saleDescricao, setSaleDescricao] = useState("")
+
+  // Custom distribution
+  const [customDistribution, setCustomDistribution] = useState(false)
+  const [customPonteValue, setCustomPonteValue] = useState("")
+  const [customProprietarioValue, setCustomProprietarioValue] = useState("")
 
   if (!vendedor) {
     return (
@@ -83,10 +98,45 @@ export default function VendedorDetalhe() {
   )
 
   function openSaleDialog() {
+    setEditingSaleId(null)
     setSaleValor("")
     setSaleData(formatDateISO(new Date()))
     setSaleDescricao("")
+    setCustomDistribution(false)
+    setCustomPonteValue("")
+    setCustomProprietarioValue("")
     setSaleDialogOpen(true)
+  }
+
+  function setCustomDefaults(valor: number) {
+    const vals = calculateSaleValues(valor, dist)
+    setCustomPonteValue(String(Math.round(vals.valorVendedor)))
+    setCustomProprietarioValue(String(Math.round(vals.valorProprietario)))
+  }
+
+  function openEditSaleDialog(venda: Venda) {
+    setEditingSaleId(venda.id)
+    setSaleValor(String(venda.valor))
+    setSaleData(formatDateISO(new Date(venda.data)))
+    setSaleDescricao(venda.descricao || "")
+    const custom = !!venda.distribuicaoCustomizada
+    setCustomDistribution(custom)
+    if (custom) {
+      const vals = calculateSaleValues(venda.valor, venda.distribuicao)
+      setCustomPonteValue(String(Math.round(vals.valorVendedor)))
+      setCustomProprietarioValue(String(Math.round(vals.valorProprietario)))
+    } else {
+      setCustomDefaults(venda.valor)
+    }
+    setSaleDialogOpen(true)
+  }
+
+  function handleToggleCustom(checked: boolean) {
+    setCustomDistribution(checked)
+    if (checked) {
+      const parsed = parseCurrencyInput(saleValor)
+      if (!isNaN(parsed) && parsed > 0) setCustomDefaults(parsed)
+    }
   }
 
   function parseCurrencyInput(value: string): number {
@@ -105,29 +155,86 @@ export default function VendedorDetalhe() {
     return parseFloat(cleaned)
   }
 
+  const parsedValor = parseCurrencyInput(saleValor)
+  const parsedPonte = parseCurrencyInput(customPonteValue)
+  const parsedProprietario = parseCurrencyInput(customProprietarioValue)
+
+  const previewDist: Distribuicao = customDistribution
+    ? buildCustomDistribution(
+        dist,
+        isNaN(parsedValor) || parsedValor <= 0 ? 0 : parsedValor,
+        isNaN(parsedPonte) ? 0 : parsedPonte,
+        isNaN(parsedProprietario) ? 0 : parsedProprietario
+      )
+    : dist
+
+  const pontePct = previewDist.vendedor
+  const proprietarioPct = previewDist.proprietario
+
+  const customTotal =
+    previewDist.empresa +
+    previewDist.despachante +
+    previewDist.vendedor +
+    previewDist.proprietario
+  const customValid =
+    customDistribution &&
+    !isNaN(parsedValor) &&
+    parsedValor > 0 &&
+    !isNaN(parsedPonte) &&
+    !isNaN(parsedProprietario)
+      ? validateCustomDistribution(dist, parsedValor, parsedPonte, parsedProprietario)
+      : false
+  const customValuesFilled =
+    !isNaN(parsedPonte) && !isNaN(parsedProprietario)
+
   function getPreviewSaleValues(): Omit<
     import("@/types").SaleCalculation,
     "venda"
   > | null {
     const parsed = parseCurrencyInput(saleValor)
     if (isNaN(parsed) || parsed <= 0) return null
-    return calculateSaleValues(parsed, dist)
+    if (customDistribution && !customValuesFilled) return null
+    return calculateSaleValues(parsed, previewDist)
   }
 
   function handleSaveSale() {
     const parsed = parseCurrencyInput(saleValor)
     if (isNaN(parsed) || parsed <= 0) return
 
-    const novaVenda: Venda = {
-      id: crypto.randomUUID(),
-      vendedorId: vendedor!.id,
-      valor: parsed,
-      data: new Date(saleData).toISOString(),
-      descricao: saleDescricao.trim() || undefined,
-      distribuicao: { ...dist },
+    let distribuicao = { ...dist }
+    if (customDistribution) {
+      if (!customValid) return
+      distribuicao = buildCustomDistribution(
+        dist,
+        parsed,
+        parsedPonte,
+        parsedProprietario
+      )
     }
 
-    addVenda(novaVenda)
+    if (editingSaleId) {
+      const existing = vendas.find((v) => v.id === editingSaleId)
+      if (!existing) return
+      updateVenda({
+        ...existing,
+        valor: parsed,
+        data: new Date(saleData).toISOString(),
+        descricao: saleDescricao.trim() || undefined,
+        distribuicao,
+        distribuicaoCustomizada: customDistribution || undefined,
+      })
+    } else {
+      addVenda({
+        id: crypto.randomUUID(),
+        vendedorId: vendedor!.id,
+        valor: parsed,
+        data: new Date(saleData).toISOString(),
+        descricao: saleDescricao.trim() || undefined,
+        distribuicao,
+        distribuicaoCustomizada: customDistribution || undefined,
+      })
+    }
+
     setSaleDialogOpen(false)
   }
 
@@ -289,7 +396,7 @@ export default function VendedorDetalhe() {
                     <TableHead className="text-right hidden sm:table-cell">
                       Proprietário
                     </TableHead>
-                    <TableHead className="w-8"></TableHead>
+                    <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -321,14 +428,26 @@ export default function VendedorDetalhe() {
                           {formatCurrency(vals.valorProprietario)}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => setDeleteSaleId(venda.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              aria-label="Editar venda"
+                              onClick={() => openEditSaleDialog(venda)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              aria-label="Excluir venda"
+                              onClick={() => setDeleteSaleId(venda.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )
@@ -344,7 +463,9 @@ export default function VendedorDetalhe() {
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Registrar venda</DialogTitle>
+            <DialogTitle>
+              {editingSaleId ? "Editar venda" : "Registrar venda"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -382,6 +503,82 @@ export default function VendedorDetalhe() {
               />
             </div>
 
+            {/* Custom distribution */}
+            <div className="space-y-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="custom-distribuicao">
+                    Distribuição personalizada
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Ajuste quanto de cada parte fica nesta venda.
+                  </p>
+                </div>
+                <Switch
+                  id="custom-distribuicao"
+                  checked={customDistribution}
+                  onCheckedChange={handleToggleCustom}
+                />
+              </div>
+
+              {customDistribution && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="custom-ponte" className="text-xs">
+                      {vendedor.nome} — Ponte
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        R$
+                      </span>
+                      <Input
+                        id="custom-ponte"
+                        type="text"
+                        inputMode="decimal"
+                        className="pl-9"
+                        value={customPonteValue}
+                        onChange={(e) =>
+                          setCustomPonteValue(
+                            e.target.value.replace(/[^0-9.,]/g, "")
+                          )
+                        }
+                        placeholder="0,00"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {pontePct.toFixed(2)}% da venda
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="custom-proprietario" className="text-xs">
+                      {config.nomeProprietario}
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        R$
+                      </span>
+                      <Input
+                        id="custom-proprietario"
+                        type="text"
+                        inputMode="decimal"
+                        className="pl-9"
+                        value={customProprietarioValue}
+                        onChange={(e) =>
+                          setCustomProprietarioValue(
+                            e.target.value.replace(/[^0-9.,]/g, "")
+                          )
+                        }
+                        placeholder="0,00"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {proprietarioPct.toFixed(2)}% da venda
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Sale preview */}
             {preview && (
               <div className="rounded-lg border bg-muted/50 p-3 space-y-1.5">
@@ -390,16 +587,16 @@ export default function VendedorDetalhe() {
                 </p>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    K10 ({dist.empresa}%)
+                    K10 ({previewDist.empresa}%)
                   </span>
                   <span className="font-medium">
                     {formatCurrency(preview.valorEmpresa)}
                   </span>
                 </div>
-                {dist.despachante > 0 && (
+                {previewDist.despachante > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      Despachante ({dist.despachante}%)
+                      Despachante ({previewDist.despachante}%)
                     </span>
                     <span className="font-medium">
                       {formatCurrency(preview.valorDespachante)}
@@ -408,7 +605,11 @@ export default function VendedorDetalhe() {
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Ponte ({dist.vendedor}%)
+                    Ponte (
+                    {customDistribution
+                      ? previewDist.vendedor.toFixed(2)
+                      : previewDist.vendedor}
+                    %)
                   </span>
                   <span className="font-medium">
                     {formatCurrency(preview.valorVendedor)}
@@ -416,11 +617,36 @@ export default function VendedorDetalhe() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Proprietário ({dist.proprietario}%)
+                    {config.nomeProprietario} (
+                    {customDistribution
+                      ? previewDist.proprietario.toFixed(2)
+                      : previewDist.proprietario}
+                    %)
                   </span>
                   <span className="font-medium text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(preview.valorProprietario)}
                   </span>
+                </div>
+                {/* Total check */}
+                <div className="border-t pt-1.5 mt-1.5">
+                  <div
+                    className={`flex justify-between text-sm font-semibold ${
+                      customValid
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-destructive"
+                    }`}
+                  >
+                    <span>Total</span>
+                    <span>
+                      {customTotal.toFixed(2)}%{" "}
+                      {customValid ? "✓" : "⚠"}
+                    </span>
+                  </div>
+                  {!customValid && (
+                    <p className="text-xs text-destructive mt-1">
+                      Os percentuais precisam totalizar 100%.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -429,8 +655,15 @@ export default function VendedorDetalhe() {
             <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleSaveSale} disabled={!saleValor || !saleData}>
-              Registrar venda
+            <Button
+              onClick={handleSaveSale}
+              disabled={
+                !saleValor ||
+                !saleData ||
+                (customDistribution && (!customValuesFilled || !customValid))
+              }
+            >
+              {editingSaleId ? "Salvar alterações" : "Registrar venda"}
             </Button>
           </DialogFooter>
         </DialogContent>

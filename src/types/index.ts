@@ -24,6 +24,7 @@ export interface Venda {
   data: string
   descricao?: string
   distribuicao: Distribuicao
+  distribuicaoCustomizada?: boolean
 }
 
 export interface SaleCalculation {

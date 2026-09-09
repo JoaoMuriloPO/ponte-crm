@@ -41,15 +41,15 @@ export default function Vendedores() {
   // Form state
   const [nome, setNome] = useState("")
   const [despachanteEnabled, setDespachanteEnabled] = useState(true)
-  const [percentualVendedor, setPercentualVendedor] = useState(20)
-  const [percentualProprietario, setPercentualProprietario] = useState(10)
+  const [percentualVendedor, setPercentualVendedor] = useState("")
+  const [percentualProprietario, setPercentualProprietario] = useState("")
 
   function openNewDialog() {
     setEditingId(null)
     setNome("")
     setDespachanteEnabled(true)
-    setPercentualVendedor(20)
-    setPercentualProprietario(10)
+    setPercentualVendedor("")
+    setPercentualProprietario("")
     setDialogOpen(true)
   }
 
@@ -57,18 +57,21 @@ export default function Vendedores() {
     setEditingId(vendedor.id)
     setNome(vendedor.nome)
     setDespachanteEnabled(vendedor.despachanteEnabled)
-    setPercentualVendedor(vendedor.percentualVendedor)
-    setPercentualProprietario(vendedor.percentualProprietario)
+    setPercentualVendedor(String(vendedor.percentualVendedor))
+    setPercentualProprietario(String(vendedor.percentualProprietario))
     setDialogOpen(true)
   }
 
   function handleSave() {
     if (!nome.trim()) return
 
+    const pv = Number(percentualVendedor || 0)
+    const pp = Number(percentualProprietario || 0)
+
     const config = {
       despachanteEnabled,
-      percentualVendedor,
-      percentualProprietario,
+      percentualVendedor: pv,
+      percentualProprietario: pp,
     }
 
     if (!validateDistribution(config as unknown as Vendedor)) return
@@ -80,8 +83,8 @@ export default function Vendedores() {
           ...existing,
           nome: nome.trim(),
           despachanteEnabled,
-          percentualVendedor,
-          percentualProprietario,
+          percentualVendedor: pv,
+          percentualProprietario: pp,
         })
       }
     } else {
@@ -90,8 +93,8 @@ export default function Vendedores() {
         nome: nome.trim(),
         createdAt: new Date().toISOString(),
         despachanteEnabled,
-        percentualVendedor,
-        percentualProprietario,
+        percentualVendedor: pv,
+        percentualProprietario: pp,
       })
     }
 
@@ -106,8 +109,8 @@ export default function Vendedores() {
   const totalDist =
     EMPRESA_PERCENTUAL +
     (despachanteEnabled ? DESPACHANTE_PERCENTUAL : 0) +
-    percentualVendedor +
-    percentualProprietario
+    Number(percentualVendedor || 0) +
+    Number(percentualProprietario || 0)
 
   const isValid = totalDist === 100
 
@@ -267,12 +270,13 @@ export default function Vendedores() {
                 <Label htmlFor="pv">% Ponte</Label>
                 <Input
                   id="pv"
-                  type="number"
-                  min={0}
-                  max={100}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="ex: 15"
                   value={percentualVendedor}
                   onChange={(e) =>
-                    setPercentualVendedor(Number(e.target.value))
+                    setPercentualVendedor(e.target.value.replace(/[^0-9]/g, ""))
                   }
                 />
               </div>
@@ -280,12 +284,15 @@ export default function Vendedores() {
                 <Label htmlFor="pp">% Proprietário</Label>
                 <Input
                   id="pp"
-                  type="number"
-                  min={0}
-                  max={100}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="ex: 15"
                   value={percentualProprietario}
                   onChange={(e) =>
-                    setPercentualProprietario(Number(e.target.value))
+                    setPercentualProprietario(
+                      e.target.value.replace(/[^0-9]/g, "")
+                    )
                   }
                 />
               </div>

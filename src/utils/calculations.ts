@@ -39,6 +39,42 @@ export function calculateSaleValues(valor: number, dist: Distribuicao): Omit<Sal
   }
 }
 
+export function buildCustomDistribution(
+  base: Distribuicao,
+  valor: number,
+  valorVendedor: number,
+  valorProprietario: number
+): Distribuicao {
+  return {
+    empresa: base.empresa,
+    despachante: base.despachante,
+    vendedor:
+      valor > 0
+        ? Math.round((valorVendedor / valor) * 100 * 100) / 100
+        : 0,
+    proprietario:
+      valor > 0
+        ? Math.round((valorProprietario / valor) * 100 * 100) / 100
+        : 0,
+  }
+}
+
+export function distributionTotal(dist: Distribuicao): number {
+  return dist.empresa + dist.despachante + dist.vendedor + dist.proprietario
+}
+
+export function validateCustomDistribution(
+  base: Distribuicao,
+  valor: number,
+  valorVendedor: number,
+  valorProprietario: number,
+  tolerance = 0.001
+): boolean {
+  const dist = buildCustomDistribution(base, valor, valorVendedor, valorProprietario)
+  const total = Math.round(distributionTotal(dist) * 100) / 100
+  return Math.abs(total - 100) <= tolerance
+}
+
 export function calculateSale(venda: Venda): SaleCalculation {
   const values = calculateSaleValues(venda.valor, venda.distribuicao)
   return {
