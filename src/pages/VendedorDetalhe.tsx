@@ -79,6 +79,8 @@ export default function VendedorDetalhe() {
   const [customDistribution, setCustomDistribution] = useState(false)
   const [customPonteValue, setCustomPonteValue] = useState("")
   const [customProprietarioValue, setCustomProprietarioValue] = useState("")
+  const [customPontePct, setCustomPontePct] = useState("")
+  const [customProprietarioPct, setCustomProprietarioPct] = useState("")
   const [attemptedCustomSave, setAttemptedCustomSave] = useState(false)
 
   if (!vendedor) {
@@ -106,6 +108,8 @@ export default function VendedorDetalhe() {
     setCustomDistribution(false)
     setCustomPonteValue("")
     setCustomProprietarioValue("")
+    setCustomPontePct("")
+    setCustomProprietarioPct("")
     setAttemptedCustomSave(false)
     setSaleDialogOpen(true)
   }
@@ -114,6 +118,8 @@ export default function VendedorDetalhe() {
     const vals = calculateSaleValues(valor, dist)
     setCustomPonteValue(String(Math.round(vals.valorVendedor)))
     setCustomProprietarioValue(String(Math.round(vals.valorProprietario)))
+    setCustomPontePct(pctStr((vals.valorVendedor / valor) * 100))
+    setCustomProprietarioPct(pctStr((vals.valorProprietario / valor) * 100))
   }
 
   function openEditSaleDialog(venda: Venda) {
@@ -124,10 +130,14 @@ export default function VendedorDetalhe() {
     const custom = !!venda.distribuicaoCustomizada
     setCustomDistribution(custom)
     setAttemptedCustomSave(false)
+    setCustomPontePct("")
+    setCustomProprietarioPct("")
     if (custom) {
       const vals = calculateSaleValues(venda.valor, venda.distribuicao)
       setCustomPonteValue(String(Math.round(vals.valorVendedor)))
       setCustomProprietarioValue(String(Math.round(vals.valorProprietario)))
+      setCustomPontePct(venda.distribuicao.vendedor.toFixed(2).replace(/\.?0+$/, ""))
+      setCustomProprietarioPct(venda.distribuicao.proprietario.toFixed(2).replace(/\.?0+$/, ""))
     } else {
       setCustomDefaults(venda.valor)
     }
@@ -158,9 +168,95 @@ export default function VendedorDetalhe() {
     return parseFloat(cleaned)
   }
 
+  function parsePctInput(value: string): number {
+    if (!value.trim()) return NaN
+    let cleaned = value.replace(/[R$\s]/g, "")
+    // Brazilian comma decimal: 15,5 -> 15.5
+    if (cleaned.includes(",")) cleaned = cleaned.replace(/\./g, "").replace(",", ".")
+    return parseFloat(cleaned)
+  }
+
+  function round2(n: number): number {
+    return Math.round(n * 100) / 100
+  }
+
+  function moneyStr(n: number): string {
+    return String(round2(n))
+  }
+
+  function pctStr(n: number): string {
+    return String(round2(n))
+  }
+
   const parsedValor = parseCurrencyInput(saleValor)
   const parsedPonte = parseCurrencyInput(customPonteValue)
   const parsedProprietario = parseCurrencyInput(customProprietarioValue)
+
+  const customAvailablePct = 100 - dist.empresa - dist.despachante
+  const customAvailableValue =
+    !isNaN(parsedValor) && parsedValor > 0
+      ? (parsedValor * customAvailablePct) / 100
+      : 0
+
+  function handlePonteValueChange(raw: string) {
+    setAttemptedCustomSave(false)
+    const cleaned = raw.replace(/[^0-9.,]/g, "")
+    setCustomPonteValue(cleaned)
+    if (isNaN(parsedValor) || parsedValor <= 0) return
+    const parsed = parseCurrencyInput(cleaned)
+    if (isNaN(parsed)) return
+    const ponte = Math.min(parsed, customAvailableValue)
+    const prop = round2(customAvailableValue - ponte)
+    setCustomPonteValue(moneyStr(ponte))
+    setCustomProprietarioValue(moneyStr(prop))
+    setCustomPontePct(pctStr((ponte / parsedValor) * 100))
+    setCustomProprietarioPct(pctStr((prop / parsedValor) * 100))
+  }
+
+  function handleProprietarioValueChange(raw: string) {
+    setAttemptedCustomSave(false)
+    const cleaned = raw.replace(/[^0-9.,]/g, "")
+    setCustomProprietarioValue(cleaned)
+    if (isNaN(parsedValor) || parsedValor <= 0) return
+    const parsed = parseCurrencyInput(cleaned)
+    if (isNaN(parsed)) return
+    const prop = Math.min(parsed, customAvailableValue)
+    const ponte = round2(customAvailableValue - prop)
+    setCustomProprietarioValue(moneyStr(prop))
+    setCustomPonteValue(moneyStr(ponte))
+    setCustomProprietarioPct(pctStr((prop / parsedValor) * 100))
+    setCustomPontePct(pctStr((ponte / parsedValor) * 100))
+  }
+
+  function handlePontePctChange(raw: string) {
+    setAttemptedCustomSave(false)
+    const cleaned = raw.replace(/[^0-9.,]/g, "")
+    setCustomPontePct(cleaned)
+    if (isNaN(parsedValor) || parsedValor <= 0) return
+    const pct = parsePctInput(cleaned)
+    if (isNaN(pct)) return
+    const clamped = Math.min(pct, customAvailablePct)
+    const ponte = round2((parsedValor * clamped) / 100)
+    const prop = round2(customAvailableValue - ponte)
+    setCustomPonteValue(moneyStr(ponte))
+    setCustomProprietarioValue(moneyStr(prop))
+    setCustomProprietarioPct(pctStr((prop / parsedValor) * 100))
+  }
+
+  function handleProprietarioPctChange(raw: string) {
+    setAttemptedCustomSave(false)
+    const cleaned = raw.replace(/[^0-9.,]/g, "")
+    setCustomProprietarioPct(cleaned)
+    if (isNaN(parsedValor) || parsedValor <= 0) return
+    const pct = parsePctInput(cleaned)
+    if (isNaN(pct)) return
+    const clamped = Math.min(pct, customAvailablePct)
+    const prop = round2((parsedValor * clamped) / 100)
+    const ponte = round2(customAvailableValue - prop)
+    setCustomProprietarioValue(moneyStr(prop))
+    setCustomPonteValue(moneyStr(ponte))
+    setCustomPontePct(pctStr((ponte / parsedValor) * 100))
+  }
 
   const previewDist: Distribuicao = customDistribution
     ? buildCustomDistribution(
@@ -189,6 +285,14 @@ export default function VendedorDetalhe() {
       : false
   const customValuesFilled =
     !isNaN(parsedPonte) && !isNaN(parsedProprietario)
+  const customPonteClamped =
+    customDistribution &&
+    !isNaN(parsePctInput(customPontePct)) &&
+    parsePctInput(customPontePct) > customAvailablePct
+  const customProprietarioClamped =
+    customDistribution &&
+    !isNaN(parsePctInput(customProprietarioPct)) &&
+    parsePctInput(customProprietarioPct) > customAvailablePct
 
   function getPreviewSaleValues(): Omit<
     import("@/types").SaleCalculation,
@@ -528,61 +632,114 @@ export default function VendedorDetalhe() {
               </div>
 
               {customDistribution && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="custom-ponte" className="text-xs">
-                      {vendedor.nome} — Ponte
-                    </Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                        R$
-                      </span>
-                      <Input
-                        id="custom-ponte"
-                        type="text"
-                        inputMode="decimal"
-                        className="pl-9"
-                        value={customPonteValue}
-                        onChange={(e) => {
-                          setCustomPonteValue(
-                            e.target.value.replace(/[^0-9.,]/g, "")
-                          )
-                          setAttemptedCustomSave(false)
-                        }}
-                        placeholder="0,00"
-                      />
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="custom-ponte" className="text-xs">
+                        {vendedor.nome} — Ponte
+                      </Label>
+                      <div className="flex items-end gap-2">
+                        <div className="relative w-[45%]">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            R$
+                          </span>
+                          <Input
+                            id="custom-ponte"
+                            type="text"
+                            inputMode="decimal"
+                            className="pl-9"
+                            value={customPonteValue}
+                            onChange={(e) => handlePonteValueChange(e.target.value)}
+                            placeholder="0,00"
+                          />
+                        </div>
+                        <div className="relative flex-1">
+                          <Input
+                            id="custom-ponte-pct"
+                            type="text"
+                            inputMode="decimal"
+                            aria-label="Porcentagem da ponte"
+                            className={
+                              customPonteClamped
+                                ? "border-destructive pr-7 text-right"
+                                : "pr-7 text-right"
+                            }
+                            value={customPontePct}
+                            onChange={(e) => handlePontePctChange(e.target.value)}
+                            placeholder="0"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {pontePct.toFixed(2)}% da venda
+                      </p>
+                      {customPonteClamped && (
+                        <p className="text-xs text-destructive">
+                          Máx. disponível: {customAvailablePct}%
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {pontePct.toFixed(2)}% da venda
-                    </p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="custom-proprietario" className="text-xs">
-                      {config.nomeProprietario}
-                    </Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                        R$
-                      </span>
-                      <Input
-                        id="custom-proprietario"
-                        type="text"
-                        inputMode="decimal"
-                        className="pl-9"
-                        value={customProprietarioValue}
-                        onChange={(e) => {
-                          setCustomProprietarioValue(
-                            e.target.value.replace(/[^0-9.,]/g, "")
-                          )
-                          setAttemptedCustomSave(false)
-                        }}
-                        placeholder="0,00"
-                      />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="custom-proprietario" className="text-xs">
+                        {config.nomeProprietario}
+                      </Label>
+                      <div className="flex items-end gap-2">
+                        <div className="relative w-[45%]">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            R$
+                          </span>
+                          <Input
+                            id="custom-proprietario"
+                            type="text"
+                            inputMode="decimal"
+                            className="pl-9"
+                            value={customProprietarioValue}
+                            onChange={(e) =>
+                              handleProprietarioValueChange(e.target.value)
+                            }
+                            placeholder="0,00"
+                          />
+                        </div>
+                        <div className="relative flex-1">
+                          <Input
+                            id="custom-proprietario-pct"
+                            type="text"
+                            inputMode="decimal"
+                            aria-label="Porcentagem do proprietário"
+                            className={
+                              customProprietarioClamped
+                                ? "border-destructive pr-7 text-right"
+                                : "pr-7 text-right"
+                            }
+                            value={customProprietarioPct}
+                            onChange={(e) =>
+                              handleProprietarioPctChange(e.target.value)
+                            }
+                            placeholder="0"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {proprietarioPct.toFixed(2)}% da venda
+                      </p>
+                      {customProprietarioClamped && (
+                        <p className="text-xs text-destructive">
+                          Máx. disponível: {customAvailablePct}%
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {proprietarioPct.toFixed(2)}% da venda
-                    </p>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Um ajusta automaticamente o outro para fechar os{" "}
+                    {customAvailablePct}% disponíveis (K10 + Despachante são
+                    fixos).
+                  </p>
                 </div>
               )}
             </div>
