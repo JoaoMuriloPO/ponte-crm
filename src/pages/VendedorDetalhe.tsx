@@ -680,6 +680,9 @@ export default function VendedorDetalhe() {
                         />
                       </div>
                       <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          %
+                        </span>
                         <Input
                           id="custom-ponte-pct"
                           type="text"
@@ -687,16 +690,13 @@ export default function VendedorDetalhe() {
                           aria-label="Porcentagem da ponte"
                           className={
                             customPonteClamped
-                              ? "border-destructive pr-7 text-right"
-                              : "pr-7 text-right"
+                              ? "border-destructive pl-9"
+                              : "pl-9"
                           }
                           value={customPontePct}
                           onChange={(e) => handlePontePctChange(e.target.value)}
                           placeholder={pontePctSugerido || "0"}
                         />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          %
-                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {pontePct.toFixed(2)}% da venda
@@ -728,6 +728,9 @@ export default function VendedorDetalhe() {
                         />
                       </div>
                       <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          %
+                        </span>
                         <Input
                           id="custom-proprietario-pct"
                           type="text"
@@ -735,8 +738,8 @@ export default function VendedorDetalhe() {
                           aria-label="Porcentagem do proprietário"
                           className={
                             customProprietarioClamped
-                              ? "border-destructive pr-7 text-right"
-                              : "pr-7 text-right"
+                              ? "border-destructive pl-9"
+                              : "pl-9"
                           }
                           value={customProprietarioPct}
                           onChange={(e) =>
@@ -744,9 +747,6 @@ export default function VendedorDetalhe() {
                           }
                           placeholder={proprietarioPctSugerido || "0"}
                         />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          %
-                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {proprietarioPct.toFixed(2)}% da venda
