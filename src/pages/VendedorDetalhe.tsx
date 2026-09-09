@@ -79,6 +79,7 @@ export default function VendedorDetalhe() {
   const [customDistribution, setCustomDistribution] = useState(false)
   const [customPonteValue, setCustomPonteValue] = useState("")
   const [customProprietarioValue, setCustomProprietarioValue] = useState("")
+  const [attemptedCustomSave, setAttemptedCustomSave] = useState(false)
 
   if (!vendedor) {
     return (
@@ -105,6 +106,7 @@ export default function VendedorDetalhe() {
     setCustomDistribution(false)
     setCustomPonteValue("")
     setCustomProprietarioValue("")
+    setAttemptedCustomSave(false)
     setSaleDialogOpen(true)
   }
 
@@ -121,6 +123,7 @@ export default function VendedorDetalhe() {
     setSaleDescricao(venda.descricao || "")
     const custom = !!venda.distribuicaoCustomizada
     setCustomDistribution(custom)
+    setAttemptedCustomSave(false)
     if (custom) {
       const vals = calculateSaleValues(venda.valor, venda.distribuicao)
       setCustomPonteValue(String(Math.round(vals.valorVendedor)))
@@ -203,7 +206,10 @@ export default function VendedorDetalhe() {
 
     let distribuicao = { ...dist }
     if (customDistribution) {
-      if (!customValid) return
+      if (!customValid) {
+        setAttemptedCustomSave(true)
+        return
+      }
       distribuicao = buildCustomDistribution(
         dist,
         parsed,
@@ -537,11 +543,12 @@ export default function VendedorDetalhe() {
                         inputMode="decimal"
                         className="pl-9"
                         value={customPonteValue}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setCustomPonteValue(
                             e.target.value.replace(/[^0-9.,]/g, "")
                           )
-                        }
+                          setAttemptedCustomSave(false)
+                        }}
                         placeholder="0,00"
                       />
                     </div>
@@ -563,11 +570,12 @@ export default function VendedorDetalhe() {
                         inputMode="decimal"
                         className="pl-9"
                         value={customProprietarioValue}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setCustomProprietarioValue(
                             e.target.value.replace(/[^0-9.,]/g, "")
                           )
-                        }
+                          setAttemptedCustomSave(false)
+                        }}
                         placeholder="0,00"
                       />
                     </div>
@@ -631,18 +639,18 @@ export default function VendedorDetalhe() {
                 <div className="border-t pt-1.5 mt-1.5">
                   <div
                     className={`flex justify-between text-sm font-semibold ${
-                      customValid
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-destructive"
+                      attemptedCustomSave && !customValid
+                        ? "text-destructive"
+                        : "text-muted-foreground"
                     }`}
                   >
                     <span>Total</span>
                     <span>
-                      {customTotal.toFixed(2)}%{" "}
-                      {customValid ? "✓" : "⚠"}
+                      {customTotal.toFixed(2)}%
+                      {attemptedCustomSave && !customValid ? " ⚠" : ""}
                     </span>
                   </div>
-                  {!customValid && (
+                  {attemptedCustomSave && !customValid && (
                     <p className="text-xs text-destructive mt-1">
                       Os percentuais precisam totalizar 100%.
                     </p>
@@ -660,7 +668,7 @@ export default function VendedorDetalhe() {
               disabled={
                 !saleValor ||
                 !saleData ||
-                (customDistribution && (!customValuesFilled || !customValid))
+                (customDistribution && !customValuesFilled)
               }
             >
               {editingSaleId ? "Salvar alterações" : "Registrar venda"}

@@ -118,7 +118,7 @@ describe("VendedorDetalhe", () => {
     expect(nova.distribuicao.proprietario).toBe(15)
   })
 
-  it("desabilita salvar e mostra erro quando não totaliza 100%", () => {
+  it("mostra erro somente ao tentar salvar com distribuição que não totaliza 100%", () => {
     render(<VendedorDetalhe />)
     fireEvent.click(screen.getByRole("button", { name: "Nova venda" }))
 
@@ -135,7 +135,25 @@ describe("VendedorDetalhe", () => {
     fireEvent.change(ponteInput, { target: { value: "1400" } })
     fireEvent.change(propInput, { target: { value: "1500" } })
 
+    // Enquanto digita, o erro ainda não aparece
+    expect(
+      screen.queryByText("Os percentuais precisam totalizar 100%.")
+    ).not.toBeInTheDocument()
+
     const saveButton = screen.getByRole("button", { name: "Registrar venda" })
-    expect(saveButton).toBeDisabled()
+    expect(saveButton).toBeEnabled()
+
+    // Ao clicar em salvar com distribuição inválida, o erro aparece
+    fireEvent.click(saveButton)
+    expect(
+      screen.getByText("Os percentuais precisam totalizar 100%.")
+    ).toBeInTheDocument()
+    expect(addVenda).not.toHaveBeenCalled()
+
+    // Ao corrigir os valores, o erro some
+    fireEvent.change(ponteInput, { target: { value: "1500" } })
+    expect(
+      screen.queryByText("Os percentuais precisam totalizar 100%.")
+    ).not.toBeInTheDocument()
   })
 })
