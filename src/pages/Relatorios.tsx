@@ -214,7 +214,7 @@ export default function Relatorios() {
             ))}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="dataInicio">Data início</Label>
               <Input
@@ -238,25 +238,6 @@ export default function Relatorios() {
                   setPeriodoAtivo("")
                 }}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vendedorFiltro">Ponte</Label>
-              <Select
-                value={vendedorFiltro}
-                onValueChange={setVendedorFiltro}
-              >
-                <SelectTrigger id="vendedorFiltro" className="w-full">
-                  <SelectValue placeholder="Todas as pontes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas as pontes</SelectItem>
-                  {vendedores.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
@@ -373,7 +354,25 @@ export default function Relatorios() {
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Distribuição</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle className="text-lg">Distribuição</CardTitle>
+                  <Select
+                    value={vendedorFiltro}
+                    onValueChange={setVendedorFiltro}
+                  >
+                    <SelectTrigger id="vendedorFiltro" className="w-fit">
+                      <SelectValue placeholder="Todas as pontes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas as pontes</SelectItem>
+                      {vendedores.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex flex-wrap gap-4 pt-2">
                   <label className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Switch checked={mostrarK10} onCheckedChange={setMostrarK10} />
