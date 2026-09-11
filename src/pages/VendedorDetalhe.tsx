@@ -41,10 +41,18 @@ import {
   buildCustomDistribution,
   validateCustomDistribution,
 } from "@/utils/calculations"
-import { formatCurrency, formatDate, formatDateISO } from "@/utils/format"
+import {
+  formatCurrency,
+  formatCurrencyInput,
+  formatCurrencyInputNumber,
+  formatDate,
+  formatDateISO,
+} from "@/utils/format"
 import { EMPRESA_PERCENTUAL, DESPACHANTE_PERCENTUAL } from "@/types"
 import type { Distribuicao, Venda } from "@/types"
 import { getConfiguracoes } from "@/services/storage/localStorageService"
+
+const MAX_VENDA = 1_000_000
 
 export default function VendedorDetalhe() {
   const { id } = useParams<{ id: string }>()
@@ -120,15 +128,15 @@ export default function VendedorDetalhe() {
 
   function setCustomDefaults(valor: number) {
     const vals = calculateSaleValues(valor, dist)
-    setCustomPonteValue(String(Math.round(vals.valorVendedor)))
-    setCustomProprietarioValue(String(Math.round(vals.valorProprietario)))
+    setCustomPonteValue(formatCurrencyInputNumber(vals.valorVendedor))
+    setCustomProprietarioValue(formatCurrencyInputNumber(vals.valorProprietario))
     setCustomPontePct(pctStr((vals.valorVendedor / valor) * 100))
     setCustomProprietarioPct(pctStr((vals.valorProprietario / valor) * 100))
   }
 
   function openEditSaleDialog(venda: Venda) {
     setEditingSaleId(venda.id)
-    setSaleValor(String(venda.valor))
+    setSaleValor(formatCurrencyInputNumber(venda.valor))
     setSaleData(formatDateISO(new Date(venda.data)))
     setSaleDescricao(venda.descricao || "")
     const custom = !!venda.distribuicaoCustomizada
@@ -140,8 +148,8 @@ export default function VendedorDetalhe() {
     setCustomProprietarioClamped(false)
     if (custom) {
       const vals = calculateSaleValues(venda.valor, venda.distribuicao)
-      setCustomPonteValue(String(Math.round(vals.valorVendedor)))
-      setCustomProprietarioValue(String(Math.round(vals.valorProprietario)))
+      setCustomPonteValue(formatCurrencyInputNumber(vals.valorVendedor))
+      setCustomProprietarioValue(formatCurrencyInputNumber(vals.valorProprietario))
       setCustomPontePct(venda.distribuicao.vendedor.toFixed(2).replace(/\.?0+$/, ""))
       setCustomProprietarioPct(venda.distribuicao.proprietario.toFixed(2).replace(/\.?0+$/, ""))
     } else {
@@ -157,6 +165,16 @@ export default function VendedorDetalhe() {
     if (checked) {
       const parsed = parseCurrencyInput(saleValor)
       if (!isNaN(parsed) && parsed > 0) setCustomDefaults(parsed)
+    }
+  }
+
+  function handleSaleValorChange(raw: string) {
+    const cleaned = formatCurrencyInput(raw)
+    const parsed = parseCurrencyInput(cleaned)
+    if (!isNaN(parsed) && parsed > MAX_VENDA) {
+      setSaleValor(formatCurrencyInputNumber(MAX_VENDA))
+    } else {
+      setSaleValor(cleaned)
     }
   }
 
@@ -189,7 +207,7 @@ export default function VendedorDetalhe() {
   }
 
   function moneyStr(n: number): string {
-    return String(round2(n))
+    return formatCurrencyInputNumber(round2(n))
   }
 
   function pctStr(n: number): string {
@@ -208,7 +226,7 @@ export default function VendedorDetalhe() {
 
   function handlePonteValueChange(raw: string) {
     setAttemptedCustomSave(false)
-    const cleaned = raw.replace(/[^0-9.,]/g, "")
+    const cleaned = formatCurrencyInput(raw)
     setCustomPonteValue(cleaned)
     setCustomPonteClamped(false)
     if (isNaN(parsedValor) || parsedValor <= 0) return
@@ -222,7 +240,7 @@ export default function VendedorDetalhe() {
 
   function handleProprietarioValueChange(raw: string) {
     setAttemptedCustomSave(false)
-    const cleaned = raw.replace(/[^0-9.,]/g, "")
+    const cleaned = formatCurrencyInput(raw)
     setCustomProprietarioValue(cleaned)
     setCustomProprietarioClamped(false)
     if (isNaN(parsedValor) || parsedValor <= 0) return
@@ -614,9 +632,10 @@ export default function VendedorDetalhe() {
                 <Input
                   id="valor"
                   type="text"
+                  inputMode="decimal"
                   className="pl-10"
                   value={saleValor}
-                  onChange={(e) => setSaleValor(e.target.value)}
+                  onChange={(e) => handleSaleValorChange(e.target.value)}
                   placeholder="0,00"
                 />
               </div>

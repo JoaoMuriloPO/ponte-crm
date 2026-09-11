@@ -68,7 +68,7 @@ describe("VendedorDetalhe", () => {
       screen.getByRole("heading", { name: "Editar venda" })
     ).toBeInTheDocument()
     const valorInput = screen.getByLabelText("Valor da venda") as HTMLInputElement
-    expect(valorInput.value).toBe("10000")
+    expect(valorInput.value).toBe("10.000")
     expect(
       screen.getByRole("button", { name: "Salvar alterações" })
     ).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe("VendedorDetalhe", () => {
 
     // Ao preencher um lado, o outro sugere no placeholder o que falta
     fireEvent.change(ponteInput, { target: { value: "1500" } })
-    expect((propInput as HTMLInputElement).placeholder).toBe("1500")
+    expect((propInput as HTMLInputElement).placeholder).toBe("1.500")
 
     // O usuário preenche o outro lado livremente
     fireEvent.change(propInput, { target: { value: "1500" } })
@@ -141,12 +141,12 @@ describe("VendedorDetalhe", () => {
 
     // 20% no ponte => R$ 2.000
     fireEvent.change(pctPonte, { target: { value: "20" } })
-    expect((ponteInput as HTMLInputElement).value).toBe("2000")
+    expect((ponteInput as HTMLInputElement).value).toBe("2.000")
     // O outro lado sugere no placeholder os 10% restantes
     expect((pctProp as HTMLInputElement).placeholder).toBe("10")
 
     fireEvent.change(pctProp, { target: { value: "10" } })
-    expect((propInput as HTMLInputElement).value).toBe("1000")
+    expect((propInput as HTMLInputElement).value).toBe("1.000")
 
     fireEvent.click(screen.getByRole("button", { name: "Registrar venda" }))
     const nova = addVenda.mock.calls[0][0] as Venda
@@ -197,5 +197,22 @@ describe("VendedorDetalhe", () => {
     expect(
       screen.queryByText("Os percentuais precisam totalizar 100%.")
     ).not.toBeInTheDocument()
+  })
+
+  it("limita o valor da venda no máximo de R$ 1.000.000,00", () => {
+    render(<VendedorDetalhe />)
+    fireEvent.click(screen.getByRole("button", { name: "Nova venda" }))
+
+    const valorInput = screen.getByLabelText("Valor da venda") as HTMLInputElement
+    const saveButton = screen.getByRole("button", { name: "Registrar venda" })
+
+    fireEvent.change(valorInput, { target: { value: "1000000" } })
+    expect(valorInput.value).toBe("1.000.000")
+    expect(saveButton).toBeEnabled()
+
+    // Acima do limite, o valor é cortado para R$ 1.000.000,00
+    fireEvent.change(valorInput, { target: { value: "9999999999999999999999" } })
+    expect(valorInput.value).toBe("1.000.000")
+    expect(saveButton).toBeEnabled()
   })
 })
