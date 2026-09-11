@@ -7,11 +7,20 @@ import {
   Wrench,
   ChevronDown,
   ChevronRight,
+  Filter,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -48,25 +57,37 @@ export default function Relatorios() {
 
   const [dataInicio, setDataInicio] = useState("")
   const [dataFim, setDataFim] = useState("")
+  const [vendedorFiltro, setVendedorFiltro] = useState<string>("todas")
+  const [mostrarK10, setMostrarK10] = useState(false)
+  const [mostrarDespachante, setMostrarDespachante] = useState(false)
+  const [periodoAtivo, setPeriodoAtivo] = useState("")
   const [expandedSellers, setExpandedSellers] = useState<Set<string>>(new Set())
 
   const report = useMemo(() => {
-    return calculateReport(vendas, dataInicio || undefined, dataFim || undefined)
-  }, [vendas, dataInicio, dataFim])
+    return calculateReport(vendas, {
+      dataInicio: dataInicio || undefined,
+      dataFim: dataFim || undefined,
+      vendedorId: vendedorFiltro === "todas" ? undefined : vendedorFiltro,
+    })
+  }, [vendas, dataInicio, dataFim, vendedorFiltro])
 
   const chartData = useMemo(() => {
     const data = [
-      { name: "K10", value: report.totalEmpresa },
-      { name: "Despachante", value: report.totalDespachante },
-      { name: "Pontes", value: report.totalPontes },
-      { name: config.nomeProprietario, value: report.totalProprietario },
+      ...(mostrarK10 ? [{ name: "K10", value: report.totalEmpresa, color: COLORS[0] }] : []),
+      ...(mostrarDespachante
+        ? [{ name: "Despachante", value: report.totalDespachante, color: COLORS[4] }]
+        : []),
+      { name: "Pontes", value: report.totalPontes, color: COLORS[2] },
+      { name: config.nomeProprietario, value: report.totalProprietario, color: COLORS[3] },
     ].filter((d) => d.value > 0)
     return data
-  }, [report, config.nomeProprietario])
+  }, [report, config.nomeProprietario, mostrarK10, mostrarDespachante])
 
   const sellerBarData = useMemo(() => {
     return vendedores.map((v) => {
-      const vendasDoVendedor = vendas.filter((ve) => ve.vendedorId === v.id)
+      const vendasDoVendedor = report.vendas
+        .filter((sc) => sc.venda.vendedorId === v.id)
+        .map((sc) => sc.venda)
       const st = calculateSellerTotals(v, vendasDoVendedor)
       return {
         name: v.nome.split(" ")[0],
@@ -75,7 +96,7 @@ export default function Relatorios() {
         ponte: st.totalVendedor,
       }
     })
-  }, [vendedores, vendas])
+  }, [vendedores, report.vendas])
 
   const sellerDetails = useMemo(() => {
     return vendedores.map((v) => {
@@ -99,9 +120,68 @@ export default function Relatorios() {
     })
   }
 
-  function clearFilters() {
-    setDataInicio("")
-    setDataFim("")
+  function toDateInput(d: Date): string {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
+  }
+
+  function togglePeriodo(label: string, inicio: Date, fim: Date) {
+    if (periodoAtivo === label) {
+      setDataInicio("")
+      setDataFim("")
+      setPeriodoAtivo("")
+    } else {
+      setDataInicio(toDateInput(inicio))
+      setDataFim(toDateInput(fim))
+      setPeriodoAtivo(label)
+    }
+  }
+
+  const PERIODOS = [
+    {
+      label: "Hoje",
+      apply: () => {
+        const hoje = new Date()
+        togglePeriodo("Hoje", hoje, hoje)
+      },
+    },
+    {
+      label: "7 dias",
+      apply: () => {
+        const hoje = new Date()
+        const inicio = new Date(hoje)
+        inicio.setDate(hoje.getDate() - 6)
+        togglePeriodo("7 dias", inicio, hoje)
+      },
+    },
+    {
+      label: "Este mês",
+      apply: () => {
+        const hoje = new Date()
+        const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+        togglePeriodo("Este mês", inicio, hoje)
+      },
+    },
+    {
+      label: "Este ano",
+      apply: () => {
+        const hoje = new Date()
+        const inicio = new Date(hoje.getFullYear(), 0, 1)
+        togglePeriodo("Este ano", inicio, hoje)
+      },
+    },
+  ]
+
+  function togglePersonalizado() {
+    if (periodoAtivo === "personalizado") {
+      setDataInicio("")
+      setDataFim("")
+      setPeriodoAtivo("")
+    } else {
+      setPeriodoAtivo("personalizado")
+    }
   }
 
   return (
@@ -116,34 +196,62 @@ export default function Relatorios() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Filtros</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            Filtros
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="dataInicio">Data início</Label>
-              <Input
-                id="dataInicio"
-                type="date"
-                value={dataInicio}
-                onChange={(e) => setDataInicio(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dataFim">Data fim</Label>
-              <Input
-                id="dataFim"
-                type="date"
-                value={dataFim}
-                onChange={(e) => setDataFim(e.target.value)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button variant="outline" onClick={clearFilters}>
-                Limpar filtros
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {PERIODOS.map((p) => (
+              <Button
+                key={p.label}
+                variant={periodoAtivo === p.label ? "default" : "outline"}
+                size="sm"
+                onClick={p.apply}
+              >
+                {p.label}
               </Button>
-            </div>
+            ))}
+            <Button
+              variant={
+                periodoAtivo === "personalizado" ? "default" : "outline"
+              }
+              size="sm"
+              onClick={togglePersonalizado}
+            >
+              Personalizado
+            </Button>
           </div>
+
+          {periodoAtivo === "personalizado" && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="dataInicio">Data início</Label>
+                <Input
+                  id="dataInicio"
+                  type="date"
+                  value={dataInicio}
+                  onChange={(e) => {
+                    setDataInicio(e.target.value)
+                    setPeriodoAtivo("personalizado")
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dataFim">Data fim</Label>
+                <Input
+                  id="dataFim"
+                  type="date"
+                  value={dataFim}
+                  onChange={(e) => {
+                    setDataFim(e.target.value)
+                    setPeriodoAtivo("personalizado")
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -228,7 +336,38 @@ export default function Relatorios() {
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Distribuição</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle className="text-lg">Distribuição</CardTitle>
+                  <Select
+                    value={vendedorFiltro}
+                    onValueChange={setVendedorFiltro}
+                  >
+                    <SelectTrigger id="vendedorFiltro" className="w-fit">
+                      <SelectValue placeholder="Todas as pontes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas as pontes</SelectItem>
+                      {vendedores.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Switch checked={mostrarK10} onCheckedChange={setMostrarK10} />
+                    K10
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Switch
+                      checked={mostrarDespachante}
+                      onCheckedChange={setMostrarDespachante}
+                    />
+                    Despachante
+                  </label>
+                </div>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -242,11 +381,8 @@ export default function Relatorios() {
                       paddingAngle={4}
                       dataKey="value"
                     >
-                      {chartData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
+                      {chartData.map((d) => (
+                        <Cell key={`cell-${d.name}`} fill={d.color} />
                       ))}
                     </Pie>
                     <Tooltip

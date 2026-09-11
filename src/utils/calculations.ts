@@ -143,11 +143,19 @@ export function calculateSellerTotals(
   }
 }
 
+export interface ReportFilters {
+  dataInicio?: string
+  dataFim?: string
+  vendedorId?: string
+  valorMin?: number
+  valorMax?: number
+}
+
 export function calculateReport(
   vendas: Venda[],
-  dataInicio?: string,
-  dataFim?: string
+  filters: ReportFilters = {}
 ): ReportTotals {
+  const { dataInicio, dataFim, vendedorId, valorMin, valorMax } = filters
   const filteredVendas = vendas.filter((venda) => {
     const vendaDate = new Date(venda.data)
     if (dataInicio && vendaDate < new Date(dataInicio)) return false
@@ -156,6 +164,9 @@ export function calculateReport(
       endDate.setHours(23, 59, 59, 999)
       if (vendaDate > endDate) return false
     }
+    if (vendedorId && venda.vendedorId !== vendedorId) return false
+    if (valorMin !== undefined && venda.valor < valorMin) return false
+    if (valorMax !== undefined && venda.valor > valorMax) return false
     return true
   })
 
