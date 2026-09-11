@@ -58,24 +58,18 @@ export default function Relatorios() {
   const [dataInicio, setDataInicio] = useState("")
   const [dataFim, setDataFim] = useState("")
   const [vendedorFiltro, setVendedorFiltro] = useState<string>("todas")
-  const [valorMin, setValorMin] = useState("")
-  const [valorMax, setValorMax] = useState("")
   const [mostrarK10, setMostrarK10] = useState(false)
   const [mostrarDespachante, setMostrarDespachante] = useState(false)
   const [periodoAtivo, setPeriodoAtivo] = useState("")
   const [expandedSellers, setExpandedSellers] = useState<Set<string>>(new Set())
 
   const report = useMemo(() => {
-    const valorMinNum = valorMin.trim() === "" ? undefined : Number(valorMin)
-    const valorMaxNum = valorMax.trim() === "" ? undefined : Number(valorMax)
     return calculateReport(vendas, {
       dataInicio: dataInicio || undefined,
       dataFim: dataFim || undefined,
       vendedorId: vendedorFiltro === "todas" ? undefined : vendedorFiltro,
-      valorMin: valorMinNum,
-      valorMax: valorMaxNum,
     })
-  }, [vendas, dataInicio, dataFim, vendedorFiltro, valorMin, valorMax])
+  }, [vendas, dataInicio, dataFim, vendedorFiltro])
 
   const chartData = useMemo(() => {
     const data = [
@@ -133,10 +127,16 @@ export default function Relatorios() {
     return `${y}-${m}-${day}`
   }
 
-  function applyPeriod(label: string, inicio: Date, fim: Date) {
-    setDataInicio(toDateInput(inicio))
-    setDataFim(toDateInput(fim))
-    setPeriodoAtivo(label)
+  function togglePeriodo(label: string, inicio: Date, fim: Date) {
+    if (periodoAtivo === label) {
+      setDataInicio("")
+      setDataFim("")
+      setPeriodoAtivo("")
+    } else {
+      setDataInicio(toDateInput(inicio))
+      setDataFim(toDateInput(fim))
+      setPeriodoAtivo(label)
+    }
   }
 
   const PERIODOS = [
@@ -144,7 +144,7 @@ export default function Relatorios() {
       label: "Hoje",
       apply: () => {
         const hoje = new Date()
-        applyPeriod("Hoje", hoje, hoje)
+        togglePeriodo("Hoje", hoje, hoje)
       },
     },
     {
@@ -153,7 +153,7 @@ export default function Relatorios() {
         const hoje = new Date()
         const inicio = new Date(hoje)
         inicio.setDate(hoje.getDate() - 6)
-        applyPeriod("7 dias", inicio, hoje)
+        togglePeriodo("7 dias", inicio, hoje)
       },
     },
     {
@@ -161,7 +161,7 @@ export default function Relatorios() {
       apply: () => {
         const hoje = new Date()
         const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
-        applyPeriod("Este mês", inicio, hoje)
+        togglePeriodo("Este mês", inicio, hoje)
       },
     },
     {
@@ -169,18 +169,19 @@ export default function Relatorios() {
       apply: () => {
         const hoje = new Date()
         const inicio = new Date(hoje.getFullYear(), 0, 1)
-        applyPeriod("Este ano", inicio, hoje)
+        togglePeriodo("Este ano", inicio, hoje)
       },
     },
   ]
 
-  function clearFilters() {
-    setDataInicio("")
-    setDataFim("")
-    setVendedorFiltro("todas")
-    setValorMin("")
-    setValorMax("")
-    setPeriodoAtivo("")
+  function togglePersonalizado() {
+    if (periodoAtivo === "personalizado") {
+      setDataInicio("")
+      setDataFim("")
+      setPeriodoAtivo("")
+    } else {
+      setPeriodoAtivo("personalizado")
+    }
   }
 
   return (
@@ -212,64 +213,45 @@ export default function Relatorios() {
                 {p.label}
               </Button>
             ))}
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="dataInicio">Data início</Label>
-              <Input
-                id="dataInicio"
-                type="date"
-                value={dataInicio}
-                onChange={(e) => {
-                  setDataInicio(e.target.value)
-                  setPeriodoAtivo("")
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dataFim">Data fim</Label>
-              <Input
-                id="dataFim"
-                type="date"
-                value={dataFim}
-                onChange={(e) => {
-                  setDataFim(e.target.value)
-                  setPeriodoAtivo("")
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-2">
-                <Label htmlFor="valorMin">Valor mín.</Label>
-                <Input
-                  id="valorMin"
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={valorMin}
-                  onChange={(e) => setValorMin(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="valorMax">Valor máx.</Label>
-                <Input
-                  id="valorMax"
-                  type="number"
-                  min="0"
-                  placeholder="∞"
-                  value={valorMax}
-                  onChange={(e) => setValorMax(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={clearFilters}>
-              Limpar filtros
+            <Button
+              variant={
+                periodoAtivo === "personalizado" ? "default" : "outline"
+              }
+              size="sm"
+              onClick={togglePersonalizado}
+            >
+              Personalizado
             </Button>
           </div>
+
+          {periodoAtivo === "personalizado" && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="dataInicio">Data início</Label>
+                <Input
+                  id="dataInicio"
+                  type="date"
+                  value={dataInicio}
+                  onChange={(e) => {
+                    setDataInicio(e.target.value)
+                    setPeriodoAtivo("personalizado")
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dataFim">Data fim</Label>
+                <Input
+                  id="dataFim"
+                  type="date"
+                  value={dataFim}
+                  onChange={(e) => {
+                    setDataFim(e.target.value)
+                    setPeriodoAtivo("personalizado")
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
